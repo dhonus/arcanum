@@ -1,4 +1,4 @@
-# Svelte + Vite
+# Arcanum RSS
 
 This template should help get you started developing with Tauri and Svelte in Vite.
 
