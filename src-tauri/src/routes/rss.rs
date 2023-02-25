@@ -1,18 +1,17 @@
 use rss::Channel;
 use std::error::Error;
 use tokio::runtime::Runtime;
-use crate::xml::parse;
 
+use crate::routes::parser;
 
 async fn example_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
         .await?
         .bytes()
         .await?;
-    println!("Content: {:?}", content);
+    //println!("Content: {:?}", content);
     let channel = Channel::read_from(&content[..])?;
     channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
-
     Ok(channel)
 }
 
@@ -27,8 +26,10 @@ pub fn main() -> String {
         Ok(channel) => {
             println!("ok");
             channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
+            let filename = parser::pull(SOURCE.clone());
+            parser::parse(filename);
             string = channel.to_string();
-            println!("string: {}", string);
+            //println!("string: {}", string);
         }
         Err(e) => {
             println!("bad Error: {}", e);
