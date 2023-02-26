@@ -5,7 +5,7 @@ use std::io::BufReader;
 use std::io;
 use xml::reader::{EventReader, XmlEvent};
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct Feed {
     pub title: String,
     //link: String,
@@ -15,7 +15,7 @@ pub struct Feed {
     pub items: Vec<Item>,
 }
 
-#[derive(serde::Serialize)]
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct Item {
     pub title: String,
     pub link: String,
@@ -56,7 +56,7 @@ pub fn pull(url: &str, filename: &str) {
 // https://mainmatter.com/blog/2020/12/31/xml-and-rust/
 pub fn parse(file: String) -> Feed {
     let mut record = Feed {
-        title: String::new(),
+        title: "Untitled Feed".to_string(),
         description: String::new(),
         last_build_date: String::new(),
         generator: String::new(),
@@ -75,7 +75,7 @@ pub fn parse(file: String) -> Feed {
     for e in parser {
         match e {
             Ok(XmlEvent::StartElement { name, .. }) => {
-                println!("{}+{}", indent(depth), name);
+                //println!("{}+{}", indent(depth), name);
                 depth += 1;
                 // Set the current field based on the element name
                 match name.local_name.as_ref() {

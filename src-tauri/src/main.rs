@@ -11,9 +11,8 @@ mod routes;
 #[tauri::command]
 fn greet(_name: &str) -> String {
     const SOURCE: &str = "https://www.ostravan.cz/feed/";
-    // routes::rss::main(SOURCE)
     match routes::rss::main(SOURCE) {
-        Some(feed) => println!("Received feed for {}", feed.filename),
+        Some(feeds) => println!("Received feed for {}", feeds[0].filename),
         None => println!("Bad RSS"),
     }
     format!("Hello, {}! You've been greeted from Rust!", "Hiya")
@@ -24,7 +23,7 @@ fn feed(_name: &str) -> Result<Feed, String> {
     const SOURCE: &str = "https://www.theguardian.com/international/rss";
     let data = routes::rss::main(SOURCE);
     match data {
-        Some(feed) => Ok(feed.feed),
+        Some(feeds) => Ok(feeds[0].feed.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }

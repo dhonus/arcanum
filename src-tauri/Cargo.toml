@@ -21,6 +21,7 @@ rss = "2.0.2"
 tokio = "1.25.0"
 xml-rs = "0.8.4"
 quick-xml = "0.27.1"
+csv = "1.2.0"
 
 [features]
 # by default Tauri runs in production mode
