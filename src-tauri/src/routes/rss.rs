@@ -3,7 +3,6 @@ use std::error::Error;
 use std::fs::File;
 use std::path::Path;
 use crate::routes::parser;
-use serde::Deserialize;
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -15,11 +14,11 @@ async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     Ok(channel)
 }
 
-#[derive(Debug, Deserialize, Clone)]
+#[derive(Debug, Clone, serde::Serialize)]
 pub struct FeedMeta {
     pub url: String,
     pub filename: String,
-    pub feed: parser::Feed
+    pub feed: Channel,
 }
 
 impl FeedMeta {
@@ -76,6 +75,10 @@ impl FeedMeta {
 }
 
 pub fn main(source: &str) -> Option<Vec<FeedMeta>> {
+    if source == "" {
+        let feeds = FeedMeta::load();
+        return Some(feeds);
+    }
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
     match runtime.block_on(obtain_feed(source)) {
@@ -83,12 +86,12 @@ pub fn main(source: &str) -> Option<Vec<FeedMeta>> {
             channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
 
             let mut feeds: Vec<FeedMeta> = Vec::new();
+            feeds = FeedMeta::load();
             let feed_meta = FeedMeta::new(source.clone());
             feeds.push(feed_meta);
 
             FeedMeta::save(feeds);
             let feeds = FeedMeta::load();
-
 
             return Some(feeds);
         }

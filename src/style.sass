@@ -1,5 +1,65 @@
+$border-color: #2f2f2f
+
 html, body
   background: #171717
   margin: 0
   padding: 0
-  color: white
+  color: rgb(205, 204, 204)
+  a
+    color: rgb(155, 120, 168)
+    text-decoration: none
+    &:hover
+      text-decoration: underline
+div.feed
+  display: flex
+  flex-direction: column
+  padding: .6rem
+
+div.layout
+  display: flex
+  flex-direction: row
+  height: 100vh
+  div.left
+    flex: 1
+    background: #171717
+    height: 100vh
+    overflow-y: scroll
+    div.feed
+      cursor: pointer
+      &:hover
+        background: #2f2f2f
+  div.center
+    flex: 1
+    background: #171717
+    height: 100vh
+    overflow-y: scroll
+    display: flex
+    flex-direction: column
+    margin: 0 1rem
+    border-left: 1px solid $border-color
+    border-right: 1px solid $border-color
+    div.entry
+      display: flex
+      flex-direction: column
+      padding: 1rem
+      cursor: pointer
+      gap: .3rem
+      border-bottom: 1px solid $border-color
+      div.header
+        font-size: .8rem
+      &:hover
+        background: #2f2f2f
+    div.meta-head
+      display: flex
+      flex-direction: column
+      background: #2f2f2f
+      padding: 1rem
+  div.right
+    flex: 4
+    background: #171717
+    height: 100vh
+    overflow-y: scroll
+    h2.title
+      text-align: center
+      font-size: 1.8rem
+

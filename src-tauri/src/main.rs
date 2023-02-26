@@ -3,7 +3,7 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-use crate::routes::parser::Feed;
+use crate::routes::rss::FeedMeta;
 
 mod routes;
 
@@ -19,11 +19,11 @@ fn greet(_name: &str) -> String {
 }
 
 #[tauri::command]
-fn feed(_name: &str) -> Result<Feed, String> {
+fn feed(_name: &str) -> Result<Vec<FeedMeta>, String> {
     const SOURCE: &str = "https://www.theguardian.com/international/rss";
-    let data = routes::rss::main(SOURCE);
+    let data = routes::rss::main(_name);
     match data {
-        Some(feeds) => Ok(feeds[0].feed.clone()),
+        Some(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }

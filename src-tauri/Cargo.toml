@@ -17,7 +17,7 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 tauri = { version = "1.2", features = ["shell-open"] }
 reqwest = { version = "0.11.14", features = ["blocking", "json"] }
-rss = "2.0.2"
+rss = {version = "2.0.2", features = ["serde"] }
 tokio = "1.25.0"
 xml-rs = "0.8.4"
 quick-xml = "0.27.1"

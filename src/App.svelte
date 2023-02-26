@@ -3,8 +3,6 @@
 </script>
 
 <main class="container">
-  <div class="row">
     <Home />
-  </div>
 </main>
 
