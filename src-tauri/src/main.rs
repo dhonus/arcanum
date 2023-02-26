@@ -26,10 +26,21 @@ fn feed(_name: &str) -> Result<Vec<FeedMeta>, String> {
     }
 }
 
+#[tauri::command]
+fn mark_read(url: &str, guid: &str) -> Result<Vec<FeedMeta>, String> {
+    println!("Marking {} as read", guid);
+    routes::rss::mark_read(url, guid);
+    let data = routes::rss::main("");
+    match data {
+        Some(feeds) => Ok(feeds.clone()),
+        _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
+    }
+}
+
 fn main() {
     //rss::main()
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, feed])
+        .invoke_handler(tauri::generate_handler![greet, feed, mark_read])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

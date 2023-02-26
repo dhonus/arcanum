@@ -24,12 +24,30 @@ div.layout
     background: #171717
     height: 100vh
     overflow-y: scroll
-    div
+    div.adding
       display: flex
-      flex-direction: row
+      flex-direction: column
       justify-content: space-between
     div.feed
       cursor: pointer
+      display: flex
+      flex-direction: row
+      align-items: center
+      p
+        font-size: 1rem
+        margin: 0
+        padding: 0
+      span.count
+        width: 2rem
+        height: 2rem
+        display: flex
+        justify-content: center
+        align-items: center
+        border-radius: 50%
+        font-size: .8rem
+        background-color: #345060
+        margin-left: .3rem
+        color: white
       &:hover
         background: #2f2f2f
   div.center
@@ -39,11 +57,12 @@ div.layout
     overflow-y: scroll
     display: flex
     flex-direction: column
-    margin: 0 1rem
+    margin: 0
     border-left: 1px solid $border-color
     border-right: 1px solid $border-color
     div.entry
       display: flex
+      position: relative
       flex-direction: column
       padding: 1rem
       cursor: pointer
@@ -51,6 +70,21 @@ div.layout
       border-bottom: 1px solid $border-color
       div.header
         font-size: .8rem
+      span.new
+        content: ""
+        display: inline-block
+        position: absolute
+        top: .5rem
+        right: .5rem
+        z-index: 10
+        width: .5rem
+        height: .5rem
+        background: #326184
+        border-radius: 50%
+        margin-right: .3rem
+      &.active
+        span.new
+          display: none
       &:hover
         background: #2f2f2f
     div.meta-head
@@ -63,6 +97,7 @@ div.layout
     background: #171717
     height: 100vh
     overflow-y: scroll
+    padding: 0 1rem
     h2.title
       text-align: center
       font-size: 1.8rem

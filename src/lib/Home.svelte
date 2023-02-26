@@ -2,14 +2,21 @@
   import { invoke } from "@tauri-apps/api/tauri"
 
   let name = "";
+  let url = "";
+  let category = "";
+
   let feeds = [];
   let currentFeed = {
     title: "",
     description: "",
+    read: [],
   }
   let feedBody = {};
   let postBody = "";
   let postTitle = "";
+
+  let __url__ = "";
+  let __guid__ = "";
 
   feed();
 
@@ -23,18 +30,31 @@
       if (feeds[i].filename === fileName) {
         currentFeed.description = feeds[i].feed.description;
         currentFeed.title = feeds[i].feed.title;
+        currentFeed.read = feeds[i].read;
         feedBody = feeds[i].feed.items;
+        __url__ = feeds[i].url;
         break;
       }
     }
   }
   async function renderPost(value){
+    __guid__ = value.guid.value;
     postBody = "";
     if (value.description !== null) postBody = value.description;
     if (value.content !== null) postBody = value.content;
     if (postBody === "") postBody
             = "The post" + value.title + "has no content. Please open in the browser to view the post.";
     postTitle = value.title;
+    console.log(value);
+    console.log(__url__, __guid__, "mark_read");
+    let __feeds__ = await invoke("mark_read", { url:__url__, guid:__guid__ });
+    feeds = __feeds__;
+    for (let i = 0; i < feeds.length; i++) {
+      if (feeds[i].url === __url__) {
+        currentFeed.read = feeds[i].read;
+        break;
+      }
+    }
   }
 </script>
 <div class="layout">
@@ -43,8 +63,10 @@
       <img src="icon.png">
       <h4>arcanum</h4>
     </div>
-    <div>
-      <input id="greet-input" placeholder="Enter a url" bind:value={name} />
+    <div class="adding">
+      <input placeholder="Name" bind:value={name} />
+      <input placeholder="https://" bind:value={url} />
+        <input placeholder="Category" bind:value={category} />
       <button on:click={feed}>
         Add feed
       </button>
@@ -52,7 +74,10 @@
     </div>
     {#each feeds as feed}
       <div on:click={loadFeed(feed.filename)} class="feed">
-        {feed.feed.title}
+        <p>{feed.feed.title}</p>
+        <span class="count">
+          {feed.feed.items.length - feed.read.length}
+        </span>
       </div>
     {/each}
   </div>
@@ -64,7 +89,11 @@
       </div>
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
-      <div on:click={renderPost(value)} class="entry">
+      <div on:click={renderPost(value)}
+           class="entry">
+        {#if !currentFeed.read.includes(value.guid.value)}
+          <span class="new"></span>
+        {/if}
           <div class="header">
             {value.pub_date}
           </div>
