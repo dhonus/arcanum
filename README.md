@@ -1,6 +1,6 @@
 # Arcanum RSS
 [Work in progress] My very rudimentary RSS reader.
-![img](img.png)
+![img](screenshot.png)
 
 ## Svelte + Tauri + Vite
 This template should help get you started developing with Tauri and Svelte in Vite.
