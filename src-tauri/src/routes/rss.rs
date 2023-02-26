@@ -1,6 +1,5 @@
 use rss::Channel;
 use std::error::Error;
-use std::fs::File;
 use std::path::Path;
 use crate::routes::parser;
 
@@ -29,8 +28,9 @@ impl FeedMeta {
             .replace(":", "_")
             .replace(".", "_");
 
-        let filename = format!("../{}", filename);
         // check if file exists
+        let filename = format!("../feeds/{}", filename);
+        println!("Filename: {}", filename);
         let path = Path::new(filename.as_str());
         if !path.exists() {
             parser::pull(url, filename.as_str());
@@ -44,8 +44,19 @@ impl FeedMeta {
         }
     }
     fn load() -> Vec<FeedMeta> {
+        match std::fs::create_dir("../feeds"){
+            Ok(_) => println!("Created dir"),
+            Err(_) => println!("Dir already exists"),
+        }
         let mut feeds = Vec::new();
-        let mut reader = csv::Reader::from_path("../db.csv").unwrap();
+        match csv::Reader::from_path("../feeds/db.csv") {
+            Ok(_) => println!("File exists"),
+            Err(_) => {
+                println!("File does not exist");
+                return feeds;
+            }
+        }
+        let mut reader = csv::Reader::from_path("../feeds/db.csv").unwrap();
         let headers = reader.headers();
         println!("Headers: {:?}", headers);
         for result in reader.records() {
@@ -59,11 +70,17 @@ impl FeedMeta {
 
         return feeds;
     }
-    fn save(feeds: Vec<FeedMeta>) -> Vec<FeedMeta> {
-        use std::fs::OpenOptions;
-        use std::io::prelude::*;
+    fn save(mut feeds: Vec<FeedMeta>) -> Vec<FeedMeta> {
+        match std::fs::create_dir("../feeds"){
+            Ok(_) => println!("Created dir"),
+            Err(_) => println!("Dir already exists"),
+        }
 
-        let mut writer = csv::Writer::from_path("../db.csv").unwrap();
+        // deduplicate feeds
+        feeds.sort_by(|a, b| a.url.cmp(&b.url));
+        feeds.dedup_by(|a, b| a.url == b.url);
+
+        let mut writer = csv::Writer::from_path("../feeds/db.csv").unwrap();
 
         writer.write_record(&["url", "filename", "feed"]).unwrap();
         for entry in feeds.iter() {
@@ -75,6 +92,11 @@ impl FeedMeta {
 }
 
 pub fn main(source: &str) -> Option<Vec<FeedMeta>> {
+    match std::fs::create_dir("../feeds"){
+        Ok(_) => println!("Created dir"),
+        Err(_) => println!("Dir already exists"),
+    }
+
     if source == "" {
         let feeds = FeedMeta::load();
         return Some(feeds);
@@ -85,8 +107,7 @@ pub fn main(source: &str) -> Option<Vec<FeedMeta>> {
         Ok(channel) => {
             channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
 
-            let mut feeds: Vec<FeedMeta> = Vec::new();
-            feeds = FeedMeta::load();
+            let mut feeds: Vec<FeedMeta> = FeedMeta::load();
             let feed_meta = FeedMeta::new(source.clone());
             feeds.push(feed_meta);
 

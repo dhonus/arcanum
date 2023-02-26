@@ -4,13 +4,6 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io;
 use rss::Channel;
-use xml::reader::{EventReader, XmlEvent};
-
-fn indent(size: usize) -> String {
-    const INDENT: &'static str = "    ";
-    (0..size).map(|_| INDENT)
-        .fold(String::with_capacity(size * INDENT.len()), |r, s| r + s)
-}
 
 pub fn pull(url: &str, filename: &str) {
     let resp = reqwest::blocking::get(url).expect("request failed");

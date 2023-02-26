@@ -8,7 +8,7 @@
   },
   "package": {
     "productName": "arcanum",
-    "version": "0.0.0"
+    "version": "1.0.0"
   },
   "tauri": {
     "allowlist": {
@@ -20,10 +20,11 @@
     },
     "bundle": {
       "active": true,
-      "category": "DeveloperTool",
+      "category": "News",
       "copyright": "",
       "deb": {
-        "depends": []
+        "depends": [],
+        "files": {}
       },
       "externalBin": [],
       "icon": [
@@ -33,7 +34,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.arcanum",
       "longDescription": "",
       "macOS": {
         "entitlements": null,

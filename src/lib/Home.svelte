@@ -37,10 +37,13 @@
 </script>
 <div class="layout">
   <div class="left">
-    <input id="greet-input" placeholder="Enter a url" bind:value={name} />
-    <button on:click={feed}>
-      Add feed
-    </button>
+    <div>
+      <input id="greet-input" placeholder="Enter a url" bind:value={name} />
+      <button on:click={feed}>
+        Add feed
+      </button>
+      <button>Update</button>
+    </div>
     {#each feeds as feed}
       <div on:click={loadFeed(feed.filename)} class="feed">
         {feed.feed.title}
