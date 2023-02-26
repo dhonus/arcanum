@@ -11,6 +11,8 @@
   let postBody = "";
   let postTitle = "";
 
+  feed();
+
   async function feed(){
     let __feeds__ = await invoke("feed", { name });
     console.log(__feeds__);
@@ -37,6 +39,10 @@
 </script>
 <div class="layout">
   <div class="left">
+    <div class="identity">
+      <img src="public/icon.png">
+      <h4>arcanum</h4>
+    </div>
     <div>
       <input id="greet-input" placeholder="Enter a url" bind:value={name} />
       <button on:click={feed}>
@@ -81,5 +87,15 @@
   }
   button *, input * {
     color: whitesmoke!important;
+  }
+  div.identity{
+    display: flex;
+    justify-content: left;
+    padding: 0.5rem;
+  }
+  div.identity img {
+    width: 4rem;
+    height: 4rem;
+    margin-right: 0.5rem;
   }
 </style>
