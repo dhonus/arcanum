@@ -40,7 +40,7 @@
 <div class="layout">
   <div class="left">
     <div class="identity">
-      <img src="public/icon.png">
+      <img src="icon.png">
       <h4>arcanum</h4>
     </div>
     <div>
