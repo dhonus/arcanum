@@ -26,20 +26,6 @@ pub struct FeedMeta {
     pub unread: i32,
 }
 
-#[derive(Debug, Clone, serde::Serialize)]
-pub struct FeedMetaWrapper{
-    pub feed_meta: FeedMeta,
-    pub category: String,
-}
-impl FeedMetaWrapper {
-    pub fn new(feed_meta: FeedMeta, category: String) -> FeedMetaWrapper {
-        FeedMetaWrapper {
-            feed_meta,
-            category,
-        }
-    }
-}
-
 impl FeedMeta {
     fn new(url: &str, mut category: &str) -> FeedMeta {
         if category == ""{

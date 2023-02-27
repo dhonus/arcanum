@@ -63,6 +63,14 @@ div.layout
         padding: .3rem
         margin: .3rem
         border-radius: 5px
+        display: flex
+        flex-direction: column
+        justify-content: center
+        align-items: center
+        img
+          width: 2rem
+          height: 2rem
+          filter: opacity(0.8)
         &:hover
           background: #326184
           cursor: pointer
@@ -193,4 +201,9 @@ div.layout
           width: 1rem
           height: 1rem
           filter: opacity(0.8)
-
+@media screen and (max-width: 1000px)
+  div.layout div.right
+    flex: 2
+@media screen and (min-width: 2000px)
+  div.layout div.right
+    padding: 0 10%

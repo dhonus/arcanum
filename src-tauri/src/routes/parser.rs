@@ -4,8 +4,13 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io;
 use rss::Channel;
+extern crate rand;
 
 pub fn pull(url: &str, filename: &str) {
+    use rand::distributions::{Alphanumeric, DistString};
+    let string = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);
+    let string = format!("{}?{}", url, string);
+
     let resp = reqwest::blocking::get(url).expect("request failed");
     let body = resp.text().expect("body invalid");
     println!("Trying to remove {}", filename);

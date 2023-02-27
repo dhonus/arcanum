@@ -44,6 +44,7 @@ version = "0.0.0"
 dependencies = [
  "csv",
  "quick-xml 0.27.1",
+ "rand 0.8.5",
  "reqwest",
  "rss",
  "serde",

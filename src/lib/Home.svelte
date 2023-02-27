@@ -121,7 +121,7 @@
           <input placeholder="Category" bind:value={category} />
         </div>
         <button on:click={feed}>
-          Add feed
+          <img src="/iconmonstr-plus-lined.svg"/> Add feed
         </button>
       </div>
       <button on:click={updateAll} class="update_button">Update feeds</button>

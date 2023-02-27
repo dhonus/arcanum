@@ -22,6 +22,7 @@ tokio = "1.25.0"
 xml-rs = "0.8.4"
 quick-xml = "0.27.1"
 csv = "1.2.0"
+rand = "0.8.5"
 
 [features]
 # by default Tauri runs in production mode
