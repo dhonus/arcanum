@@ -121,7 +121,7 @@ impl FeedMeta {
                     }
                 }
                 Err(_) => {
-                    println!("Error reading log");
+                    println!("Error reading log for {}. It is usually safe to ignore.", meta.filename);
                 }
             }
             feeds.push(meta);
@@ -221,7 +221,7 @@ pub fn update(source: &str) {
     println!("Saved.");
 }
 
-pub fn main(url: &str, category: &str) -> Option<Vec<FeedMetaWrapper>> {
+pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>> {
     match std::fs::create_dir("../feeds"){
         Ok(_) => println!("Created dir"),
         Err(_) => println!("Dir already exists"),
@@ -229,13 +229,18 @@ pub fn main(url: &str, category: &str) -> Option<Vec<FeedMetaWrapper>> {
 
     // first run returns empty vec
     if url == "" {
+        let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
         let feeds = FeedMeta::load();
-        let mut feeds_categorized: Vec<FeedMetaWrapper> = Vec::new();
-        for feed in feeds.iter() {
-            let mut wrapper = FeedMetaWrapper::new(feed.clone(), feed.category.to_string());
-            feeds_categorized.push(wrapper);
+        if feeds.len() == 0 {
+            categorized.insert("Uncategorized".to_string(), feeds);
+        } else {
+            for feed in feeds.iter() {
+                categorized.entry(feed.category.clone())
+                    .or_insert(Vec::new())
+                    .push(feed.clone());
+            }
         }
-        return Some(feeds_categorized);
+        return Some(categorized);
     }
     println!("here");
 
@@ -253,26 +258,15 @@ pub fn main(url: &str, category: &str) -> Option<Vec<FeedMetaWrapper>> {
             let mut feeds = FeedMeta::load();
 
             feeds.sort_by(|a, b| a.category.cmp(&b.category));
-            let mut feeds_categorized: Vec<FeedMetaWrapper> = Vec::new();
-            let mut categorized: HashMap<String, FeedMeta> = HashMap::new();
-            let mut current = "";
+
+            let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
             for feed in feeds.iter() {
-               match current {
-                   "" => {
-                       current = feed.category.as_str();
-                   }
-                   _ => {
-                       if current == feed.category.as_str() {
-                           feeds_categorized.push(FeedMetaWrapper::new(feed.clone(), current.to_string()));
-                           break;
-                       }
-                       current = feed.category.as_str();
-                       feeds_categorized.push(FeedMetaWrapper::new(feed.clone(), current.to_string()));
-                   }
-               }
+                categorized.entry(feed.category.clone())
+                    .or_insert(Vec::new())
+                    .push(feed.clone());
             }
 
-            return Some(feeds_categorized);
+            return Some(categorized);
         }
         Err(e) => {
             println!("bad Error: {}", e);
