@@ -1,8 +1,8 @@
-name: Release
+name: publish
 on:
   push:
     tags:
-      - 'v*'
+      - 'app-v*'
   workflow_dispatch:
 
 jobs:
