@@ -1,10 +1,10 @@
+use std::collections::HashMap;
 use rss::Channel;
 use std::error::Error;
 use std::path::Path;
 use crate::routes::parser;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::fs::{File, OpenOptions};
-use tauri::utils::config::parse::read_from;
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -20,13 +20,31 @@ async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
 pub struct FeedMeta {
     pub url: String,
     pub filename: String,
+    pub category: String,
     pub feed: Channel,
     pub read: Vec<String>,
     pub unread: i32,
 }
 
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct FeedMetaWrapper{
+    pub feed_meta: FeedMeta,
+    pub category: String,
+}
+impl FeedMetaWrapper {
+    pub fn new(feed_meta: FeedMeta, category: String) -> FeedMetaWrapper {
+        FeedMetaWrapper {
+            feed_meta,
+            category,
+        }
+    }
+}
+
 impl FeedMeta {
-    fn new(url: &str) -> FeedMeta {
+    fn new(url: &str, mut category: &str) -> FeedMeta {
+        if category == ""{
+            category = "Uncategorized";
+        }
         let filename = url
             .replace("https://", "")
             .replace("/", "_")
@@ -52,6 +70,7 @@ impl FeedMeta {
         FeedMeta {
             url: url.to_string(),
             filename,
+            category: category.to_string(),
             feed,
             read: Vec::new(),
             unread
@@ -77,8 +96,8 @@ impl FeedMeta {
             // The iterator yields Result<StringRecord, Error>, so we check the
             // error here.
             let record = result.unwrap();
-            assert_eq!(record.len(), 3);
-            let mut meta = FeedMeta::new(record.get(0).unwrap());
+            assert_eq!(record.len(), 4);
+            let mut meta = FeedMeta::new(record.get(0).unwrap(), record.get(3).unwrap());
             println!("{:?}", record);
 
             let logFilename = format!("{}.log", meta.filename.clone());
@@ -122,9 +141,9 @@ impl FeedMeta {
 
         let mut writer = csv::Writer::from_path("../feeds/db.csv").unwrap();
 
-        writer.write_record(&["url", "filename", "feed"]).unwrap();
+        writer.write_record(&["url", "filename", "feed", "category"]).unwrap();
         for entry in feeds.iter() {
-            writer.write_record(&[entry.url.as_str(), entry.filename.as_str(), entry.feed.title.as_str()]).unwrap();
+            writer.write_record(&[entry.url.as_str(), entry.filename.as_str(), entry.feed.title.as_str(), entry.category.as_str()]).unwrap();
         }
         writer.flush().expect("Failed to flush writer");
         return feeds;
@@ -191,7 +210,7 @@ pub fn update(source: &str) {
     let mut feeds: Vec<FeedMeta> = FeedMeta::load();
     let mut index = 0;
     for (i, feed) in feeds.iter().enumerate() {
-        if feed.url == source {
+        if feed.filename == source {
             index = i;
         }
     }
@@ -199,35 +218,61 @@ pub fn update(source: &str) {
     parser::pull(feed.url.as_str(), feed.filename.as_str());
 
     FeedMeta::save(feeds);
+    println!("Saved.");
 }
 
-pub fn main(source: &str) -> Option<Vec<FeedMeta>> {
+pub fn main(url: &str, category: &str) -> Option<Vec<FeedMetaWrapper>> {
     match std::fs::create_dir("../feeds"){
         Ok(_) => println!("Created dir"),
         Err(_) => println!("Dir already exists"),
     }
 
     // first run returns empty vec
-    if source == "" {
+    if url == "" {
         let feeds = FeedMeta::load();
-        return Some(feeds);
+        let mut feeds_categorized: Vec<FeedMetaWrapper> = Vec::new();
+        for feed in feeds.iter() {
+            let mut wrapper = FeedMetaWrapper::new(feed.clone(), feed.category.to_string());
+            feeds_categorized.push(wrapper);
+        }
+        return Some(feeds_categorized);
     }
     println!("here");
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
-    match runtime.block_on(obtain_feed(source)) {
+    match runtime.block_on(obtain_feed(url)) {
         Ok(channel) => {
             channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
 
             let mut feeds: Vec<FeedMeta> = FeedMeta::load();
-            let feed_meta = FeedMeta::new(source.clone());
+            let feed_meta = FeedMeta::new(url.clone(), category.clone());
             feeds.push(feed_meta);
 
             FeedMeta::save(feeds);
-            let feeds = FeedMeta::load();
+            let mut feeds = FeedMeta::load();
 
-            return Some(feeds);
+            feeds.sort_by(|a, b| a.category.cmp(&b.category));
+            let mut feeds_categorized: Vec<FeedMetaWrapper> = Vec::new();
+            let mut categorized: HashMap<String, FeedMeta> = HashMap::new();
+            let mut current = "";
+            for feed in feeds.iter() {
+               match current {
+                   "" => {
+                       current = feed.category.as_str();
+                   }
+                   _ => {
+                       if current == feed.category.as_str() {
+                           feeds_categorized.push(FeedMetaWrapper::new(feed.clone(), current.to_string()));
+                           break;
+                       }
+                       current = feed.category.as_str();
+                       feeds_categorized.push(FeedMetaWrapper::new(feed.clone(), current.to_string()));
+                   }
+               }
+            }
+
+            return Some(feeds_categorized);
         }
         Err(e) => {
             println!("bad Error: {}", e);

@@ -1,27 +1,38 @@
 <script>
   import { invoke } from "@tauri-apps/api/tauri"
 
-  let name = "";
+  // to get values when Adding a feed
   let url = "";
   let category = "";
+  let warning = "";
+  let updating = false;
 
+  // to get values when Updating a feed
   let feeds = [];
   let currentFeed = {
     title: "",
     description: "",
     read: [],
   }
+
+  // to get values when Rendering a post
   let feedBody = {};
   let postBody = "";
   let postTitle = "";
+  let postDate = "";
+  let postLink = "";
 
+  // to get values when Marking a post as read
   let __url__ = "";
   let __guid__ = "";
 
-  feed();
+  updateFeed("");
 
   async function feed(){
-    let __feeds__ = await invoke("feed", { name });
+    if (url === "") {
+      warning = "Please enter a valid URL";
+    }
+    let __feeds__ = await invoke("feed", { url, category });
     console.log(__feeds__);
     feeds = __feeds__;
   }
@@ -38,12 +49,21 @@
     }
   }
   async function updateFeed(url){
-    console.log(url);
+    console.log(url, "is the thing");
     let __feeds__ = await invoke("update_feed", { url }).catch((e) => {
       console.log(e);
     });
     feeds = __feeds__;
-    await feed();
+    await loadFeed(url);
+    console.log(__feeds__);
+  }
+  async function updateAll(){
+    updating = true;
+
+    for (let i = 0; i < feeds.length; i++){
+      await updateFeed(feeds[i].filename);
+    }
+    updating = false;
   }
   async function renderPost(value){
     __guid__ = value.guid.value;
@@ -53,6 +73,8 @@
     if (postBody === "") postBody
             = "The post" + value.title + "has no content. Please open in the browser to view the post.";
     postTitle = value.title;
+    postDate = value.pub_date;
+    postLink = value.link;
     console.log(value);
     console.log(__url__, __guid__, "mark_read");
     let __feeds__ = await invoke("mark_read", { url:__url__, guid:__guid__ });
@@ -72,13 +94,19 @@
       <h4>arcanum</h4>
     </div>
     <div class="adding">
-      <input placeholder="Name" bind:value={name} />
+      {warning}
       <input placeholder="https://" bind:value={url} />
         <input placeholder="Category" bind:value={category} />
       <button on:click={feed}>
         Add feed
       </button>
-      <button>Update</button>
+      <button on:click={updateAll}>Update</button>
+      {#if updating}
+        <div class="spinner">
+          Updating
+          <img src="/spinner.gif" class="spinner">
+        </div>
+      {/if}
     </div>
     {#each feeds as feed}
       <div on:click={loadFeed(feed.filename)} class="feed">
@@ -115,6 +143,14 @@
   </div>
   <div class="right">
     <h2 class="title">{postTitle}</h2>
+    {#if postDate !== ""}
+      <div class="meta">
+        <p>{postDate}</p>
+        <a href="{postLink}" title="Visit the original site">
+          <img src="/iconmonstr-globe-3.svg">
+        </a>
+      </div>
+    {/if}
     {@html postBody}
   </div>
 </div>

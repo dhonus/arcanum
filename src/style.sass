@@ -28,6 +28,13 @@ div.layout
       display: flex
       flex-direction: column
       justify-content: space-between
+      div.spinner
+        display: flex
+        justify-content: center
+        align-items: center
+        img
+          width: 4rem
+          height: 4rem
     div.feed
       cursor: pointer
       display: flex
@@ -83,6 +90,7 @@ div.layout
       cursor: pointer
       gap: .3rem
       border-bottom: 1px solid $border-color
+      border-left: 2px solid transparent
       &.active
         background: #2f2f2f
         border-left: 2px solid #326184
@@ -119,4 +127,24 @@ div.layout
     h2.title
       text-align: center
       font-size: 1.8rem
+    div.meta
+      display: flex
+      flex-direction: row
+      justify-content: center
+      align-items: center
+      gap: 1rem
+      margin: 0 0 1rem 0
+      a
+        display: flex
+        justify-content: center
+        align-items: center
+        width: 2rem
+        height: 2rem
+        border-radius: 50%
+        &:hover
+          background: #2f2f2f
+        img
+          width: 1rem
+          height: 1rem
+          filter: opacity(0.8)
 

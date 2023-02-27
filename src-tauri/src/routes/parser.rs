@@ -8,7 +8,11 @@ use rss::Channel;
 pub fn pull(url: &str, filename: &str) {
     let resp = reqwest::blocking::get(url).expect("request failed");
     let body = resp.text().expect("body invalid");
-
+    println!("Trying to remove {}", filename);
+    match std::fs::remove_file(filename){
+        Ok(_) => println!("Removed file"),
+        Err(_) => println!("File does not exist"),
+    }
     let mut out = File::create(filename).expect("failed to create file");
     io::copy(&mut body.as_bytes(), &mut out).expect("failed to copy content");
 }
