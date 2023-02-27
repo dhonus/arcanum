@@ -1,5 +1,6 @@
 <script>
   import { invoke } from "@tauri-apps/api/tauri"
+  import CollapsibleSection from './CollapsibleSection.svelte'
 
   // to get values when Adding a feed
   let url = "";
@@ -8,7 +9,7 @@
   let updating = false;
 
   // to get values when Updating a feed
-  let feeds = [];
+  let feeds = {};
   let currentFeed = {
     title: "",
     description: "",
@@ -37,14 +38,16 @@
     feeds = __feeds__;
   }
   async function loadFeed(fileName){
-    for (let i = 0; i < feeds.length; i++) {
-      if (feeds[i].filename === fileName) {
-        currentFeed.description = feeds[i].feed.description;
-        currentFeed.title = feeds[i].feed.title;
-        currentFeed.read = feeds[i].read;
-        feedBody = feeds[i].feed.items;
-        __url__ = feeds[i].url;
-        break;
+    for (const [key, value] of Object.entries(feeds)) {
+      for (let j = 0; j < value.length; j++){
+        if (value[j].filename === fileName) {
+          currentFeed.description = value[j].feed.description;
+          currentFeed.title = value[j].feed.title;
+          currentFeed.read = value[j].read;
+          feedBody = value[j].feed.items;
+          __url__ = value[j].url;
+          break;
+        }
       }
     }
   }
@@ -59,9 +62,10 @@
   }
   async function updateAll(){
     updating = true;
-
-    for (let i = 0; i < feeds.length; i++){
-      await updateFeed(feeds[i].filename);
+    for (const [key, value] of Object.entries(feeds)) {
+      for (let i = 0; i < value.length; i++){
+        await updateFeed(value[i].filename);
+      }
     }
     updating = false;
   }
@@ -108,17 +112,21 @@
         </div>
       {/if}
     </div>
-    {#each feeds as feed}
-      <div on:click={loadFeed(feed.filename)} class="feed">
-        <p>{feed.feed.title}</p>
-        <button class="update"
-                on:click={updateFeed(feed.filename)}>
-          <img src="/iconmonstr-refresh-lined.svg"  />
-        </button>
-        <span class="count">
-          {feed.unread}
-        </span>
-      </div>
+    {#each Object.entries(feeds) as [key, category]}
+      <CollapsibleSection headerText={key} >
+        {#each category as feed}
+          <div on:click={loadFeed(feed.filename)} class="feed">
+            <p>{feed.feed.title}</p>
+            <button class="update"
+                    on:click={updateFeed(feed.filename)}>
+              <img src="/iconmonstr-refresh-lined.svg"  />
+            </button>
+            <span class="count">
+              {feed.unread}
+            </span>
+          </div>
+        {/each}
+      </CollapsibleSection>
     {/each}
   </div>
   <div class="center">
