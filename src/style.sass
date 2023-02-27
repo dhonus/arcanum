@@ -37,6 +37,7 @@ div.layout
         font-size: 1rem
         margin: 0
         padding: 0
+        flex: 1
       span.count
         width: 2rem
         height: 2rem
@@ -48,6 +49,20 @@ div.layout
         background-color: #345060
         margin-left: .3rem
         color: white
+      button.update
+        display: flex
+        justify-content: center
+        align-items: center
+        border: none
+        background-color: #345060
+        border-radius: 50%
+        &:hover
+          background-color: #326184
+          cursor: pointer
+        img
+          width: 1rem
+          height: 1rem
+          filter: opacity(0.8)
       &:hover
         background: #2f2f2f
   div.center
@@ -68,6 +83,9 @@ div.layout
       cursor: pointer
       gap: .3rem
       border-bottom: 1px solid $border-color
+      &.active
+        background: #2f2f2f
+        border-left: 2px solid #326184
       div.header
         font-size: .8rem
       span.new

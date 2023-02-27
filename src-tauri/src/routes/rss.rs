@@ -22,6 +22,7 @@ pub struct FeedMeta {
     pub filename: String,
     pub feed: Channel,
     pub read: Vec<String>,
+    pub unread: i32,
 }
 
 impl FeedMeta {
@@ -46,12 +47,14 @@ impl FeedMeta {
             parser::pull(url, filename.as_str());
         }
         let feed = parser::parse(filename.clone());
+        let unread: i32 = feed.items().len() as i32;
 
         FeedMeta {
             url: url.to_string(),
             filename,
             feed,
             read: Vec::new(),
+            unread
         }
     }
     fn load() -> Vec<FeedMeta> {
@@ -83,6 +86,20 @@ impl FeedMeta {
             match log {
                 Ok(log) => {
                     meta.read = log;
+                    meta.unread = 0;
+                    for item in meta.feed.items() {
+                        let guid = item.guid();
+                        match guid {
+                            Some(guid) => {
+                                if !meta.read.contains(&guid.value().to_string()) {
+                                    meta.unread += 1;
+                                }
+                            }
+                            None => {
+                                println!("No guid");
+                            }
+                        }
+                    }
                 }
                 Err(_) => {
                     println!("Error reading log");
@@ -168,6 +185,20 @@ pub fn mark_read(url: &str, guid: &str) {
         .replace(".", "_");
     let filename = format!("../feeds/{}/feed.xml.log", filename);
     FeedMeta::modify_file(filename.as_str(), guid).unwrap();
+}
+
+pub fn update(source: &str) {
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+    let mut index = 0;
+    for (i, feed) in feeds.iter().enumerate() {
+        if feed.url == source {
+            index = i;
+        }
+    }
+    let feed = &mut feeds[index];
+    parser::pull(feed.url.as_str(), feed.filename.as_str());
+
+    FeedMeta::save(feeds);
 }
 
 pub fn main(source: &str) -> Option<Vec<FeedMeta>> {

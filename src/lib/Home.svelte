@@ -37,6 +37,14 @@
       }
     }
   }
+  async function updateFeed(url){
+    console.log(url);
+    let __feeds__ = await invoke("update_feed", { url }).catch((e) => {
+      console.log(e);
+    });
+    feeds = __feeds__;
+    await feed();
+  }
   async function renderPost(value){
     __guid__ = value.guid.value;
     postBody = "";
@@ -75,8 +83,12 @@
     {#each feeds as feed}
       <div on:click={loadFeed(feed.filename)} class="feed">
         <p>{feed.feed.title}</p>
+        <button class="update"
+                on:click={updateFeed(feed.filename)}>
+          <img src="/iconmonstr-refresh-lined.svg"  />
+        </button>
         <span class="count">
-          {feed.feed.items.length - feed.read.length}
+          {feed.unread}
         </span>
       </div>
     {/each}
@@ -90,7 +102,7 @@
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
       <div on:click={renderPost(value)}
-           class="entry">
+           class="{value.guid.value === __guid__ ? 'entry active' : 'entry'}">
         {#if !currentFeed.read.includes(value.guid.value)}
           <span class="new"></span>
         {/if}
