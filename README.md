@@ -5,6 +5,10 @@ It is relatively quick, looks nice and is definitely not finished. It only works
 
 ![img](screenshot.png)
 
+## How to use
+You can download a prebuilt binary from the [releases](https://github.com/dhonus/arcanum/releases) page. 
+You can also build it yourself with `npm run tauri build`.
+
 ## Svelte + Tauri + Vite
 This template should help get you started developing with Tauri and Svelte in Vite.
 
