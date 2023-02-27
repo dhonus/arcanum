@@ -44,8 +44,8 @@
     button img{
         transition: transform 330ms ease-in-out;
         transform: rotate(-90deg);
-        width: 1rem;
-        height: 1rem;
+        width: .8rem;
+        height: .8rem;
         opacity: 0.8;
     }
 

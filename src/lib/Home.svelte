@@ -1,4 +1,4 @@
-<script>
+<script xmlns="http://www.w3.org/1999/html">
   import { invoke } from "@tauri-apps/api/tauri"
   import CollapsibleSection from './CollapsibleSection.svelte'
 
@@ -32,7 +32,12 @@
 
   async function feed(){
     if (url === "") {
-      warning = "Please enter a valid URL";
+      warning = "Please enter a valid URL!";
+      return;
+    }
+    if (!url.startsWith("http")) {
+      warning = "Please enter a valid URL starting with http!";
+      return;
     }
     let __feeds__ = await invoke("feed", { url, category });
     console.log(__feeds__);
@@ -114,7 +119,7 @@
       <h4>arcanum</h4>
     </div>
     <div class="adding">
-      {warning}
+      <div class="warning">{warning}</div>
       <div class="entry">
         <div>
           <input placeholder="https://" bind:value={url} />
@@ -137,9 +142,11 @@
         {#each category as feed}
           <div on:click={loadFeed(feed.filename)} class="feed">
             <p>{feed.feed.title}</p>
-            <span class="count">
-              {feed.unread}
-            </span>
+            {#if feed.unread !== 0}
+              <span class="count">
+                {feed.unread}
+              </span>
+            {/if}
           </div>
         {/each}
       </CollapsibleSection>
@@ -177,16 +184,18 @@
     <div class="end">All caught up!</div>
   </div>
   <div class="right">
-    <h2 class="title">{postTitle}</h2>
-    {#if postDate !== ""}
-      <div class="meta">
-        <p>{postDate}</p>
-        <a href="{postLink}" title="Visit the original site">
-          <img src="/iconmonstr-globe-3.svg">
-        </a>
-      </div>
-    {/if}
-    {@html postBody}
+    <article>
+      <h2 class="title">{postTitle}</h2>
+      {#if postDate !== ""}
+        <div class="meta">
+          <p>{postDate}</p>
+          <a href="{postLink}" title="Visit the original site">
+            <img src="/iconmonstr-globe-3.svg">
+          </a>
+        </div>
+      {/if}
+      {@html postBody}
+    </article>
   </div>
 </div>
 <style>
