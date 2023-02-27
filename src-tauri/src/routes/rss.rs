@@ -208,6 +208,10 @@ pub fn mark_read(url: &str, guid: &str) {
 
 pub fn update(source: &str) {
     let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+    if feeds.len() == 0 {
+        println!("No feeds");
+        return;
+    }
     let mut index = 0;
     for (i, feed) in feeds.iter().enumerate() {
         if feed.filename == source {

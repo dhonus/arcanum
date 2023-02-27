@@ -37,7 +37,7 @@
         color: whitesmoke;
     }
     button:hover {
-        background: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.1);
         cursor: pointer;
     }
 
@@ -46,6 +46,7 @@
         transform: rotate(-90deg);
         width: 1rem;
         height: 1rem;
+        opacity: 0.8;
     }
 
     button[aria-expanded="true"] img {
