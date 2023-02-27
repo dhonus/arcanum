@@ -14,6 +14,7 @@
     title: "",
     description: "",
     read: [],
+    filename: "",
   }
 
   // to get values when Rendering a post
@@ -36,14 +37,17 @@
     let __feeds__ = await invoke("feed", { url, category });
     console.log(__feeds__);
     feeds = __feeds__;
+    url = "";
+    category = "";
   }
   async function loadFeed(fileName){
     for (const [key, value] of Object.entries(feeds)) {
       for (let j = 0; j < value.length; j++){
-        if (value[j].filename === fileName) {
+        if (value[j].filename === fileName || fileName === "") {
           currentFeed.description = value[j].feed.description;
           currentFeed.title = value[j].feed.title;
           currentFeed.read = value[j].read;
+          currentFeed.filename = value[j].filename;
           feedBody = value[j].feed.items;
           __url__ = value[j].url;
           break;
@@ -69,6 +73,16 @@
     }
     updating = false;
   }
+  async function deleteFeed(url){
+    console.log(url, "is the thing");
+    let __feeds__ = await invoke("delete_feed", { url }).catch((e) => {
+      console.log(e);
+    });
+    feeds = __feeds__;
+    await loadFeed(url);
+    console.log(__feeds__);
+    await loadFeed("");
+  }
   async function renderPost(value){
     __guid__ = value.guid.value;
     postBody = "";
@@ -83,10 +97,12 @@
     console.log(__url__, __guid__, "mark_read");
     let __feeds__ = await invoke("mark_read", { url:__url__, guid:__guid__ });
     feeds = __feeds__;
-    for (let i = 0; i < feeds.length; i++) {
-      if (feeds[i].url === __url__) {
-        currentFeed.read = feeds[i].read;
-        break;
+    for (const [key, val] of Object.entries(feeds)) {
+      for (let i = 0; i < val.length; i++) {
+        if (val[i].url === __url__) {
+          currentFeed.read = val[i].read;
+          break;
+        }
       }
     }
   }
@@ -99,12 +115,16 @@
     </div>
     <div class="adding">
       {warning}
-      <input placeholder="https://" bind:value={url} />
-        <input placeholder="Category" bind:value={category} />
-      <button on:click={feed}>
-        Add feed
-      </button>
-      <button on:click={updateAll}>Update</button>
+      <div class="entry">
+        <div>
+          <input placeholder="https://" bind:value={url} />
+          <input placeholder="Category" bind:value={category} />
+        </div>
+        <button on:click={feed}>
+          Add feed
+        </button>
+      </div>
+      <button on:click={updateAll} class="update_button">Update feeds</button>
       {#if updating}
         <div class="spinner">
           Updating
@@ -117,10 +137,6 @@
         {#each category as feed}
           <div on:click={loadFeed(feed.filename)} class="feed">
             <p>{feed.feed.title}</p>
-            <button class="update"
-                    on:click={updateFeed(feed.filename)}>
-              <img src="/iconmonstr-refresh-lined.svg"  />
-            </button>
             <span class="count">
               {feed.unread}
             </span>
@@ -135,6 +151,16 @@
         <b>{currentFeed.title}</b>
         {currentFeed.description}
       </div>
+      <div class="meta-control">
+        <button class="update"
+                on:click={updateFeed(currentFeed.filename)}>
+          <img src="/iconmonstr-refresh-lined.svg"  />
+        </button>
+        <button class="update"
+                on:click={deleteFeed(currentFeed.filename)}>
+          <img src="/iconmonstr-trash-can-28.svg"  />
+        </button>
+      </div>
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
       <div on:click={renderPost(value)}
@@ -148,6 +174,7 @@
           {value.title}
       </div>
     {/each}
+    <div class="end">All caught up!</div>
   </div>
   <div class="right">
     <h2 class="title">{postTitle}</h2>

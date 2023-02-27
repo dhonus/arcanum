@@ -221,6 +221,33 @@ pub fn update(source: &str) {
     println!("Saved.");
 }
 
+pub fn delete(source: &str) {
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+    let mut index = 0;
+    for (i, feed) in feeds.iter().enumerate() {
+        if feed.filename == source {
+            index = i;
+        }
+    }
+
+    if index == 0 {
+        println!("No such feed");
+        return;
+    }
+
+    let feed = &mut feeds[index];
+    let stripped = feed.filename.as_str().strip_suffix("feed.xml").unwrap();
+    match std::fs::remove_dir_all(stripped) {
+        Ok(_) => println!("Deleted"),
+        Err(_) => println!("Error deleting"),
+    }
+
+    feeds.remove(index);
+
+    FeedMeta::save(feeds);
+    println!("Saved.");
+}
+
 pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>> {
     match std::fs::create_dir("../feeds"){
         Ok(_) => println!("Created dir"),

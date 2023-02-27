@@ -1,5 +1,8 @@
 # Arcanum RSS
-[Work in progress] My very rudimentary RSS reader.
+
+This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use daily to read my feeds.
+It is relatively quick, looks nice and is definitely not finished. It only works online because it doesn't cache images.
+
 ![img](screenshot.png)
 
 ## Svelte + Tauri + Vite

@@ -8,11 +8,9 @@
 
 <div class="collapsible">
     <h3>
-        <button aria-expanded={expanded} on:click={() => expanded = !expanded}>{headerText}
-            <svg viewBox="0 0 20 20" fill="none" >
-                <path class="vert" d="M10 1V19" stroke="black" stroke-width="2"/>
-                <path d="M1 10L19 10" stroke="black" stroke-width="2"/>
-            </svg>
+        <button aria-expanded={expanded} on:click={() => expanded = !expanded}>
+            <img src="/iconmonstr-arrow-80.svg">
+            {headerText}
         </button>
     </h3>
 
@@ -22,42 +20,37 @@
 </div>
 
 <style>
-    .collapsible {
-    }
-
     h3 {
         margin: 0;
     }
 
     button {
         display: flex;
-        justify-content: space-between;
+        justify-content: left;
+        align-items: center;
+        gap: .6rem;
         width: 100%;
         border: none;
         margin: 0;
         padding: 1em 0.5em;
-        background: black;
-        color: white;
+        background: none;
+        color: whitesmoke;
+    }
+    button:hover {
+        background: rgba(255, 255, 255, 0.1);
+        cursor: pointer;
     }
 
-    button[aria-expanded="true"] {
-        border-bottom: 1px solid gray;
+    button img{
+        transition: transform 330ms ease-in-out;
+        transform: rotate(-90deg);
+        width: 1rem;
+        height: 1rem;
     }
 
-    button[aria-expanded="true"] .vert {
-        display: none;
-    }
-
-    button:focus svg{
-        outline: 2px solid;
-    }
-
-    button [aria-expanded="true"] rect {
-        fill: currentColor;
-    }
-
-    svg {
-        height: 0.7em;
-        width: 0.7em;
+    button[aria-expanded="true"] img {
+        transform: rotate(0deg);
+        transform-origin: center;
+        transition: transform 330ms ease-in-out;
     }
 </style>

@@ -41,10 +41,23 @@ fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     }
 }
 
+#[tauri::command]
+fn delete_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
+    println!("Updating {}", url);
+
+    routes::rss::delete(url);
+
+    let data = routes::rss::main( "", "");
+    match data {
+        Some(feeds) => Ok(feeds.clone()),
+        _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
+    }
+}
+
 fn main() {
     //rss::main()
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![feed, mark_read, update_feed])
+        .invoke_handler(tauri::generate_handler![feed, mark_read, update_feed, delete_feed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
