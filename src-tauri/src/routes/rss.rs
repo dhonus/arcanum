@@ -1,10 +1,14 @@
 use std::collections::HashMap;
+use std::env;
 use rss::Channel;
 use std::error::Error;
 use std::path::Path;
 use crate::routes::parser;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::fs::{File, OpenOptions};
+use tauri::api::path;
+use tauri::api::path::{app_data_dir, data_dir};
+use tauri::api::path::BaseDirectory::Config;
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -239,10 +243,23 @@ pub fn delete(source: &str) {
 }
 
 pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>> {
-    match std::fs::create_dir("../feeds"){
+
+    let path = path::data_dir().unwrap();
+    let the_path = path.to_str().unwrap();
+
+    println!("The current directory is {} and the suggested if", the_path);
+
+    let root = Path::new(the_path);
+    assert!(env::set_current_dir(&root).is_ok());
+
+    // create dir
+    match std::fs::create_dir_all("arcanum/feeds"){
         Ok(_) => println!("Created dir"),
         Err(_) => println!("Dir already exists"),
     }
+    let the_path = format!("{}/arcanum/feeds", the_path);
+    let root = Path::new(the_path.as_str());
+    assert!(env::set_current_dir(&root).is_ok());
 
     // first run returns empty vec
     if url == "" {
