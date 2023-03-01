@@ -6,7 +6,8 @@ This is a simple RSS reader that I made to learn Rust and Tauri. I wanted someth
 
 ## How to use
 You can download a prebuilt binary from the [releases](https://github.com/dhonus/arcanum/releases) page. Only linux tested. 
-You can also build it yourself by running `npm install` and  `npm run tauri build` in the root of the project.
+
+You can build arcanum yourself by running `npm install` and `npm run tauri build` in the root of the project.
 
 ## Svelte + Tauri + Vite
 This template should help get you started developing with Tauri and Svelte in Vite.
