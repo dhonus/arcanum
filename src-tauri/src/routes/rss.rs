@@ -215,6 +215,22 @@ pub fn update(source: &str) {
     println!("Saved.");
 }
 
+pub fn update_all() {
+    let feeds: Vec<FeedMeta> = FeedMeta::load();
+    if feeds.len() == 0 {
+        println!("No feeds");
+        return;
+    }
+    let mut updated_feeds = Vec::with_capacity(feeds.len());
+    for feed in feeds.iter() {
+        let mut updated_feed = feed.clone();
+        parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str());
+        updated_feeds.push(updated_feed);
+    }
+    FeedMeta::save(updated_feeds);
+    println!("Saved.");
+}
+
 pub fn delete(source: &str) {
     let mut feeds: Vec<FeedMeta> = FeedMeta::load();
     let mut index = 0;

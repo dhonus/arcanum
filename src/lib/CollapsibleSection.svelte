@@ -2,8 +2,9 @@
     // based on suggestions from:
     // Inclusive Components by Heydon Pickering https://inclusive-components.design/collapsible-sections/
     export let headerText;
+    export let expanded_in;
 
-    let expanded = true;
+    let expanded = !expanded_in;
 </script>
 
 <div class="collapsible">
@@ -21,7 +22,10 @@
 
 <style>
     h3 {
-        margin: 0;
+        margin: 0!important;
+    }
+    div.collapsible {
+        padding: .3rem;
     }
 
     button {
@@ -32,9 +36,12 @@
         width: 100%;
         border: none;
         margin: 0;
-        padding: 1em 0.5em;
+        padding: .6rem 0.5rem;
         background: none;
         color: whitesmoke;
+        border-radius: 7px;
+        font-weight: bold;
+        font-size: .9rem;
     }
     button:hover {
     background: rgba(255, 255, 255, 0.1);

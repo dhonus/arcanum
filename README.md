@@ -1,13 +1,12 @@
 # Arcanum RSS
 
-This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use daily to read my feeds.
-It is relatively quick, looks nice and is definitely not finished. It only works online because it doesn't cache images.
+This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use every day to read my feeds. Does not cache images, online only.
 
-![img](screen.png)
+![img](screenshot.png)
 
 ## How to use
 You can download a prebuilt binary from the [releases](https://github.com/dhonus/arcanum/releases) page. 
-You can also build it yourself with `npm run tauri build`.
+You can also build it yourself by running `npm install` and  `npm run tauri build` in the root of the project.
 
 ## Svelte + Tauri + Vite
 This template should help get you started developing with Tauri and Svelte in Vite.

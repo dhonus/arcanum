@@ -28,6 +28,7 @@ fn mark_read(url: &str, guid: &str) -> Result<HashMap<String, Vec<FeedMeta>>, St
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }
+
 #[tauri::command]
 fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     println!("Updating {}", url);
@@ -35,6 +36,17 @@ fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     routes::rss::update(url);
 
     let data = routes::rss::main( "", "");
+    match data {
+        Some(feeds) => Ok(feeds.clone()),
+        _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
+    }
+}
+
+#[tauri::command]
+fn update_all() -> Result<HashMap<String, Vec<FeedMeta>>, String> {
+    routes::rss::update_all();
+    println!("Updating all feeds");
+    let data = routes::rss::main("", "");
     match data {
         Some(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
@@ -57,7 +69,7 @@ fn delete_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 fn main() {
     //rss::main()
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![feed, mark_read, update_feed, delete_feed])
+        .invoke_handler(tauri::generate_handler![feed, mark_read, update_feed, update_all, delete_feed])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

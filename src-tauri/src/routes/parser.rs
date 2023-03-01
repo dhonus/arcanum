@@ -6,8 +6,6 @@ use std::{io};
 use rss::Channel;
 extern crate rand;
 
-
-
 pub fn pull(url: &str, filename: &str) {
     use rand::distributions::{Alphanumeric, DistString};
     let string = Alphanumeric.sample_string(&mut rand::thread_rng(), 16);

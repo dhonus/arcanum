@@ -44,6 +44,7 @@
     feeds = __feeds__;
     url = "";
     category = "";
+    warning = "";
   }
   async function loadFeed(fileName){
     for (const [key, value] of Object.entries(feeds)) {
@@ -69,6 +70,7 @@
     await loadFeed(url);
     console.log(__feeds__);
   }
+
   async function updateAll(){
     updating = true;
     for (const [key, value] of Object.entries(feeds)) {
@@ -115,32 +117,34 @@
 <div class="layout">
   <div class="left">
     <div class="identity">
-      <img src="icon.png">
-      <h4>arcanum</h4>
+      <img src="../../public/icon.png">
+      <h4>Arcanum RSS</h4>
     </div>
-    <div class="adding">
-      <div class="warning">{warning}</div>
-      <div class="entry">
-        <div>
-          <input placeholder="https://" bind:value={url} />
-          <input placeholder="Category" bind:value={category} />
+    <CollapsibleSection headerText="Add new feed" expanded_in=false>
+      <div class="adding">
+        <div class="warning">{warning}</div>
+        <div class="entry">
+          <div>
+            <input placeholder="https://" bind:value={url} />
+            <input placeholder="Category" bind:value={category} />
+          </div>
+          <button on:click={feed}>
+            <img src="/iconmonstr-plus-lined.svg"/> Add feed
+          </button>
         </div>
-        <button on:click={feed}>
-          <img src="/iconmonstr-plus-lined.svg"/> Add feed
-        </button>
+        <button on:click={updateAll} class="update_button">Update feeds</button>
+        {#if updating}
+          <div class="spinner">
+            Updating
+            <img src="/spinner.gif" class="spinner">
+          </div>
+        {/if}
       </div>
-      <button on:click={updateAll} class="update_button">Update feeds</button>
-      {#if updating}
-        <div class="spinner">
-          Updating
-          <img src="/spinner.gif" class="spinner">
-        </div>
-      {/if}
-    </div>
+    </CollapsibleSection>
     {#each Object.entries(feeds) as [key, category]}
       <CollapsibleSection headerText={key} >
         {#each category as feed}
-          <div on:click={loadFeed(feed.filename)} class="feed">
+          <div on:click={loadFeed(feed.filename)} class={feed.url === __url__ ? 'feed active' : 'feed'}>
             <p>{feed.feed.title}</p>
             {#if feed.unread !== 0}
               <span class="count">
