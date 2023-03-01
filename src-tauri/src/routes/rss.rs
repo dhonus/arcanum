@@ -5,10 +5,8 @@ use std::error::Error;
 use std::path::Path;
 use crate::routes::parser;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
-use std::fs::{File, OpenOptions};
+use std::fs::{OpenOptions};
 use tauri::api::path;
-use tauri::api::path::{app_data_dir, data_dir};
-use tauri::api::path::BaseDirectory::Config;
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -90,8 +88,8 @@ impl FeedMeta {
             let mut meta = FeedMeta::new(record.get(0).unwrap(), record.get(3).unwrap());
             println!("{:?}", record);
 
-            let logFilename = format!("{}.log", meta.filename.clone());
-            let log = FeedMeta::read_log(logFilename.as_str());
+            let logfile_name = format!("{}.log", meta.filename.clone());
+            let log = FeedMeta::read_log(logfile_name.as_str());
             match log {
                 Ok(log) => {
                     meta.read = log;
@@ -223,7 +221,7 @@ pub fn update_all() {
     }
     let mut updated_feeds = Vec::with_capacity(feeds.len());
     for feed in feeds.iter() {
-        let mut updated_feed = feed.clone();
+        let updated_feed = feed.clone();
         parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str());
         updated_feeds.push(updated_feed);
     }

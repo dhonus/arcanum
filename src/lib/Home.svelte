@@ -117,7 +117,7 @@
 <div class="layout">
   <div class="left">
     <div class="identity">
-      <img src="../../public/icon.png">
+      <img src="icon.png">
       <h4>Arcanum RSS</h4>
     </div>
     <div class="adding">

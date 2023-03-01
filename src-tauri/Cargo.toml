@@ -1,6 +1,6 @@
 [package]
 name = "arcanum"
-version = "1.0.4"
+version = "1.0.6"
 description = "A Tauri App"
 authors = ["you"]
 license = ""
