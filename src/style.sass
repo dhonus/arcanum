@@ -17,8 +17,10 @@ div.feed
   flex-direction: column
   padding: .3rem
   margin: .3rem
+  border: 1px solid transparent
   &.active
     background: #2f2f2f
+    border: 1px solid $border-color
 
 div.layout
   display: flex
@@ -29,8 +31,14 @@ div.layout
     background: #1d1d1d
     height: 100vh
     overflow-y: auto
-    div.identity h4
-      font-family: 'Source Sans Pro', sans-serif
+    div.identity
+      h4
+        font-family: 'Source Sans Pro', sans-serif
+      img
+        box-shadow: 0 0 5px 1px #1c1c1c
+        border-radius: 25px
+    div.collapsible:first-of-type
+      padding: 0
     div.adding
       display: flex
       flex-direction: column
@@ -42,9 +50,8 @@ div.layout
         color: white
         padding: .3rem
       div.entry
-        margin: 0 1rem 1rem 1rem
-        padding: .3rem
         background: #1d1d1d
+        margin: 0 1rem 1rem 1rem
         border-radius: 7px
         display: flex
         flex-direction: row
@@ -52,16 +59,19 @@ div.layout
           flex: 1
           padding-right: 1rem
           input
-            border: none
             width: 100%
             background: #2f2f2f
             color: white
             padding: .3rem
-            margin: .3rem
+            margin: .3rem 0
             border-radius: 5px
             flex: 1
+            border: 1px solid $border-color
+            transition: all .2s ease-in-out
             &:focus
               outline: none
+              background: #3b3b3b
+              transition: all .2s ease-in-out
       div.spinner
         display: flex
         justify-content: center
@@ -69,7 +79,7 @@ div.layout
         img
           width: 4rem
           height: 4rem
-      button
+      button.update_button, button.add_button
         border: none
         background: #dcdcdc
         color: black
@@ -80,6 +90,12 @@ div.layout
         flex-direction: column
         justify-content: center
         align-items: center
+        &:hover
+          background: #c0c0c0
+          cursor: pointer
+      button.add_button
+        padding: .5rem
+        margin-right: 0
         img
           width: 2rem
           height: 2rem
@@ -88,7 +104,7 @@ div.layout
           background: #c0c0c0
           cursor: pointer
       button.update_button
-        margin: 0 1rem 1rem 1rem
+        margin: .6rem .3rem .3rem .3rem
     div.feed
       cursor: pointer
       display: flex
@@ -96,6 +112,7 @@ div.layout
       align-items: center
       padding: 0.4rem 1.6rem
       border-radius: 7px
+      border: 1px solid transparent
       p
         font-size: 1rem
         margin: 0
@@ -112,8 +129,16 @@ div.layout
         margin-left: .3rem
         color: black
         font-weight: 600
+        box-shadow: 0 0 5px 1px #1c1c1c
+
       &:hover
         background: #2f2f2f
+        border: 1px solid $border-color
+        box-shadow: 0 0 5px 1px #1c1c1c
+      &.active
+        border: 1px solid $border-color
+        box-shadow: 0 0 5px 1px #1c1c1c
+
   div.center
     flex: 1
     background: #1d1d1d
@@ -133,10 +158,14 @@ div.layout
       cursor: pointer
       gap: .4rem
       border-radius: 7px
+      border: 1px solid transparent
       //border-bottom: 1px solid $border-color
       //border-left: 2px solid transparent
       &.active
         background: #2f2f2f
+        border: 1px solid $border-color
+        box-shadow: 0 0 5px 1px #1c1c1c
+
         //border-left: 2px solid #326184
       div.header
         font-size: .8rem
@@ -157,15 +186,17 @@ div.layout
           display: none
       &:hover
         background: #2f2f2f
+        border: 1px solid $border-color
+        box-shadow: 0 0 5px 1px #1c1c1c
 
     div.meta-head
       display: flex
       flex-direction: column
-      background: #2f2f2f
+      background: #262626
       padding: 1rem
       margin: .3rem .3rem 0 .3rem
-      border-bottom: 1px solid $border-color
       border-radius: 7px 7px 0 0
+      border: 1px solid $border-color
     div.meta-control
       display: flex
       flex-direction: row
@@ -175,6 +206,8 @@ div.layout
       gap: .5rem
       margin: 0 .3rem .3rem .3rem
       border-radius: 0 0 7px 7px
+      border: 1px solid $border-color
+      border-top: 0px
       button.update
         display: flex
         justify-content: center
@@ -214,6 +247,7 @@ div.layout
           max-width: 90%
           margin: 2rem auto
           display: block
+
     h2.title
       text-align: center
       font-size: 1.8rem

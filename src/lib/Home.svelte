@@ -120,27 +120,27 @@
       <img src="../../public/icon.png">
       <h4>Arcanum RSS</h4>
     </div>
+    <div class="adding">
     <CollapsibleSection headerText="Add new feed" expanded_in=false>
-      <div class="adding">
-        <div class="warning">{warning}</div>
+      {#if warning.length > 0}<div class="warning">{warning}</div>{/if}
         <div class="entry">
           <div>
             <input placeholder="https://" bind:value={url} />
             <input placeholder="Category" bind:value={category} />
           </div>
-          <button on:click={feed}>
+          <button on:click={feed} class="add_button">
             <img src="/iconmonstr-plus-lined.svg"/> Add feed
           </button>
         </div>
-        <button on:click={updateAll} class="update_button">Update feeds</button>
         {#if updating}
           <div class="spinner">
             Updating
             <img src="/spinner.gif" class="spinner">
           </div>
         {/if}
-      </div>
     </CollapsibleSection>
+    <button on:click={updateAll} class="update_button">Update feeds</button>
+    </div>
     {#each Object.entries(feeds) as [key, category]}
       <CollapsibleSection headerText={key} >
         {#each category as feed}
