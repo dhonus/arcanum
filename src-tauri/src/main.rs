@@ -19,14 +19,9 @@ fn feed(_url: &str, _category: &str) -> Result<HashMap<String, Vec<FeedMeta>>, S
 }
 
 #[tauri::command]
-fn mark_read(url: &str, guid: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
+fn mark_read(url: &str, guid: &str){
     println!("Marking {} as read", guid);
     routes::rss::mark_read(url, guid);
-    let data = routes::rss::main( "", "");
-    match data {
-        Some(feeds) => Ok(feeds.clone()),
-        _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
-    }
 }
 
 #[tauri::command]
@@ -67,7 +62,6 @@ fn delete_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 }
 
 fn main() {
-    //rss::main()
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![feed, mark_read, update_feed, update_all, delete_feed])
         .run(tauri::generate_context!())

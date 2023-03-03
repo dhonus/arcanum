@@ -7,6 +7,8 @@ use crate::routes::parser;
 use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::fs::{OpenOptions};
 use tauri::api::path;
+use std::time::Duration;
+
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -49,8 +51,17 @@ impl FeedMeta {
         let filename = format!("../feeds/{}/feed.xml", filename);
         println!("Filename: {}", filename);
         let path = Path::new(filename.as_str());
+        let client = reqwest::Client::builder()
+            .gzip(true)
+            .timeout(Duration::from_secs(8))
+            .build().unwrap();
+
+        let runtime = tokio::runtime::Runtime::new().unwrap();
         if !path.exists() {
-            parser::pull(url, filename.as_str());
+            match runtime.block_on(parser::pull(url, filename.as_str(), &client)) {
+                Ok(_) => println!("File created"),
+                Err(_) => println!("File not created"),
+            }
         }
         let feed = parser::parse(filename.clone());
         let unread: i32 = feed.items().len() as i32;
@@ -206,8 +217,21 @@ pub fn update(source: &str) {
             index = i;
         }
     }
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+
+    let client = reqwest::Client::builder()
+        .gzip(true)
+        .timeout(Duration::from_secs(8))
+        .build().unwrap();
     let feed = &mut feeds[index];
-    parser::pull(feed.url.as_str(), feed.filename.as_str());
+    match runtime.block_on(parser::pull(feed.url.as_str(), feed.filename.as_str(), &client)) {
+        Ok(_) => {
+            println!("Updated {}", feed.filename);
+        }
+        Err(e) => {
+            println!("Error updating {}: {}", feed.filename, e);
+        }
+    }
 
     FeedMeta::save(feeds);
     println!("Saved.");
@@ -219,10 +243,21 @@ pub fn update_all() {
         println!("No feeds");
         return;
     }
+    let client = reqwest::Client::builder()
+        .gzip(true)
+        .timeout(Duration::from_secs(8))
+        .build().unwrap();
+
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+
     let mut updated_feeds = Vec::with_capacity(feeds.len());
     for feed in feeds.iter() {
         let updated_feed = feed.clone();
-        parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str());
+        //parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str(), &client);
+        match runtime.block_on(parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str(), &client)) {
+            Ok(_) => println!("Updated {}", updated_feed.filename),
+            Err(_) => println!("Error updating {}", updated_feed.filename),
+        }
         updated_feeds.push(updated_feed);
     }
     FeedMeta::save(updated_feeds);
@@ -275,6 +310,7 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
     let root = Path::new(the_path.as_str());
     assert!(env::set_current_dir(&root).is_ok());
 
+
     // first run returns empty vec
     if url == "" {
         let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
@@ -290,7 +326,6 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
         }
         return Some(categorized);
     }
-    println!("here");
 
     let runtime = tokio::runtime::Runtime::new().unwrap();
 
@@ -317,7 +352,7 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
             return Some(categorized);
         }
         Err(e) => {
-            println!("bad Error: {}", e);
+            println!("Real bad Error: {}", e);
         }
     }
     None

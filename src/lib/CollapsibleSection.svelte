@@ -33,7 +33,6 @@
         justify-content: left;
         align-items: center;
         gap: .6rem;
-        width: 100%;
         border: none;
         margin: 0;
         padding: .6rem 0.5rem;

@@ -16,6 +16,15 @@
     read: [],
     filename: "",
   }
+  import { writable } from 'svelte/store';
+
+  const readBuffer = writable([]);
+
+  let readBufferValue = [];
+
+  readBuffer.subscribe(value => {
+    readBufferValue = value;
+  });
 
   // to get values when Rendering a post
   let feedBody = {};
@@ -73,6 +82,10 @@
 
   async function updateAll(){
     updating = true;
+    /*await invoke("update_all", {  }).catch((e) => {
+      warning = e;
+    });*/
+
     for (const [key, value] of Object.entries(feeds)) {
       for (let i = 0; i < value.length; i++){
         await updateFeed(value[i].filename);
@@ -90,7 +103,7 @@
     console.log(__feeds__);
     await loadFeed("");
   }
-  async function renderPost(value){
+  async function renderPost(value) {
     __guid__ = value.guid.value;
     postBody = "";
     if (value.description !== null) postBody = value.description;
@@ -101,17 +114,16 @@
     postDate = value.pub_date;
     postLink = value.link;
     console.log(value);
-    console.log(__url__, __guid__, "mark_read");
-    let __feeds__ = await invoke("mark_read", { url:__url__, guid:__guid__ });
-    feeds = __feeds__;
-    for (const [key, val] of Object.entries(feeds)) {
-      for (let i = 0; i < val.length; i++) {
-        if (val[i].url === __url__) {
-          currentFeed.read = val[i].read;
-          break;
-        }
-      }
-    }
+
+    //readBuffer.push(value.guid.value);
+    readBuffer.update(buffer => [...buffer, value.guid.value]);
+    console.log(readBuffer)
+
+    await markPostAsRead();
+  }
+
+  async function markPostAsRead() {
+    await invoke("mark_read", { url:__url__, guid:__guid__ });
   }
 </script>
 <div class="layout">
@@ -132,13 +144,13 @@
             <img src="/iconmonstr-plus-lined.svg"/> Add feed
           </button>
         </div>
-        {#if updating}
-          <div class="spinner">
-            Updating
-            <img src="/spinner.gif" class="spinner">
-          </div>
-        {/if}
     </CollapsibleSection>
+    <div class="spinner">
+        {#if updating}
+            <img src="/spinner.gif"/>
+        {/if}
+    </div>
+
     <button on:click={updateAll} class="update_button">Update feeds</button>
     </div>
     {#each Object.entries(feeds) as [key, category]}
@@ -176,7 +188,7 @@
     {#each Object.entries(feedBody) as [key, value]}
       <div on:click={renderPost(value)}
            class="{value.guid.value === __guid__ ? 'entry active' : 'entry'}">
-        {#if !currentFeed.read.includes(value.guid.value)}
+        {#if !currentFeed.read.includes(value.guid.value) && !readBufferValue.includes(value.guid.value)}
           <span class="new"></span>
         {/if}
           <div class="header">
