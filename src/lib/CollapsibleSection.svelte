@@ -33,7 +33,6 @@
         justify-content: left;
         align-items: center;
         gap: .6rem;
-        border: none;
         margin: 0;
         padding: .6rem 0.5rem;
         background: none;
@@ -41,10 +40,14 @@
         border-radius: 7px;
         font-weight: bold;
         font-size: .9rem;
+        width: 100%;
+        border: 1px solid transparent;
     }
     button:hover {
-    background: rgba(255, 255, 255, 0.1);
-        cursor: pointer;
+    background: #2f2f2f;
+    border: 1px solid #3d3d3d;
+    box-shadow: 0 0 5px 1px #1c1c1c;
+    cursor: pointer;
     }
 
     button img{

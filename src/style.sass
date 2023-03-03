@@ -16,7 +16,6 @@ div.feed
   display: flex
   flex-direction: column
   padding: .3rem
-  margin: .3rem
   border: 1px solid transparent
   &.active
     background: #2f2f2f
@@ -109,6 +108,7 @@ div.layout
           cursor: pointer
       button.update_button
         margin: .6rem .6rem .3rem .6rem
+        width: auto
     div.feed
       cursor: pointer
       display: flex
@@ -173,6 +173,7 @@ div.layout
         //border-left: 2px solid #326184
       div.header
         font-size: .8rem
+        color: #bdbdbd
       span.new
         content: ""
         display: inline-block
@@ -244,8 +245,9 @@ div.layout
       width: 92%
       margin: auto
       display: block
-      text-indent: 2rem
       p
+        line-height: 1.4rem
+        font-size: 1rem
         img
           height: auto
           max-width: 90%
@@ -253,24 +255,36 @@ div.layout
           display: block
 
     h2.title
-      text-align: center
+      text-align: left
       font-size: 1.8rem
+      margin: 0 0 2.6rem 0
+      text-indent: 0
+      padding-bottom: 1rem
+      border-bottom: 1px solid $border-color
     div.meta
       display: flex
       flex-direction: row
-      justify-content: center
+      justify-content: left
       align-items: center
-      gap: 1rem
-      margin: 0 0 1rem 0
-      a
-        display: flex
-        justify-content: center
-        align-items: center
-        width: 2rem
-        height: 2rem
-        border-radius: 50%
-        &:hover
+      gap: .6rem
+      margin: 2rem 0 0 0
+      text-indent: 0
+      p
+        color: #d5d5d5
+      div.visit
+        a
+          display: flex
+          align-items: center
+          flex-direction: row
+          justify-content: left
+          gap: .5rem
+          padding: .3rem
+          border-radius: 7px
           background: #2f2f2f
+          border: 1px solid #3d3d3d
+          box-shadow: 0 0 5px 1px #1c1c1c
+          &:hover
+            background: #3d3d3d
         img
           width: 1rem
           height: 1rem

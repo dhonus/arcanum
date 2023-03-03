@@ -183,7 +183,7 @@
         {#each category as feed}
           <div on:click={loadFeed(feed.filename)} class={feed.url === __url__ ? 'feed active' : 'feed'}>
             <p>{feed.feed.title}</p>
-            {#if feed.unread !== 0}
+            {#if feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0) !== 0}
               <span class="count">
                 {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
               </span>
@@ -226,14 +226,18 @@
   </div>
   <div class="right">
     <article>
-      <h2 class="title">{postTitle}</h2>
       {#if postDate !== ""}
         <div class="meta">
           <p>{postDate}</p>
-          <a href="{postLink}" title="Visit the original site">
-            <img src="/iconmonstr-globe-3.svg">
-          </a>
+          <div class="visit">
+            <a href="{postLink}" title="Visit the original site">
+              <img src="/iconmonstr-globe-3.svg">
+            </a>
+          </div>
         </div>
+      {/if}
+      {#if postTitle !== ""}
+        <h2 class="title">{postTitle}</h2>
       {/if}
       {@html postBody}
     </article>
