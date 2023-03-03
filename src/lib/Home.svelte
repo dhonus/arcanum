@@ -19,11 +19,17 @@
   import { writable } from 'svelte/store';
 
   const readBuffer = writable([]);
+  const readDict = writable({});
 
   let readBufferValue = [];
+  let readDictValue = {};
 
   readBuffer.subscribe(value => {
     readBufferValue = value;
+  });
+
+  readDict.subscribe(value => {
+      readDictValue = value;
   });
 
   // to get values when Rendering a post
@@ -119,6 +125,25 @@
     readBuffer.update(buffer => [...buffer, value.guid.value]);
     console.log(readBuffer)
 
+    // here we add the feed that is being read to the readDict; this is so that the little "not read" bubble
+    // is only shown if the post is not read in any of the feeds
+    // better than reloading all the feeds from rust
+    if (readDictValue[currentFeed.filename] === undefined) {
+      readDict.update(dict => {
+        if (!currentFeed.read.includes(value.guid.value)){
+          dict[currentFeed.filename] = [value.guid.value];
+        }
+        return dict;
+      });
+    } else {
+      readDict.update(dict => {
+        if (!dict[currentFeed.filename].includes(value.guid.value) && !currentFeed.read.includes(value.guid.value)){
+          dict[currentFeed.filename].push(value.guid.value);
+        }
+        return dict;
+      });
+    }
+
     await markPostAsRead();
   }
 
@@ -160,7 +185,7 @@
             <p>{feed.feed.title}</p>
             {#if feed.unread !== 0}
               <span class="count">
-                {feed.unread}
+                {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
               </span>
             {/if}
           </div>
