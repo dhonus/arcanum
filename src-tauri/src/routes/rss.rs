@@ -159,6 +159,26 @@ impl FeedMeta {
         Ok(lines)
     }
     // take guid and save into lof of read articles
+    fn re_index_and_mark_all_read(filename: &str, lines: &mut FeedMeta) -> Result<(), std::io::Error> {
+        println!("{} is the filename", filename);
+        let mut file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(filename)?;
+
+        file.set_len(0)?;
+        file.seek(SeekFrom::Start(0))?;
+        let mut writer = std::io::BufWriter::new(&file);
+        for line in lines.feed.items.clone() {
+            writer.write(line.guid.unwrap().value.as_bytes())?;
+            writer.write(b"\n")?;
+        }
+        writer.flush().unwrap();
+
+        Ok(())
+    }
+
     fn modify_file(filename: &str, adding: &str) -> Result<(), std::io::Error> {
         // Open the file for reading or create it if it doesn't exist
         let mut file = OpenOptions::new()
@@ -261,6 +281,42 @@ pub fn update_all() {
         updated_feeds.push(updated_feed);
     }
     FeedMeta::save(updated_feeds);
+    println!("Saved.");
+}
+
+pub fn read(source: &str) {
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+    if feeds.len() == 0 {
+        println!("No feeds");
+        return;
+    }
+    let mut index = 0;
+    for (i, feed) in feeds.iter().enumerate() {
+        if feed.filename == source {
+            index = i;
+        }
+    }
+    let runtime = tokio::runtime::Runtime::new().unwrap();
+
+    let client = reqwest::Client::builder()
+        .gzip(true)
+        .timeout(Duration::from_secs(8))
+        .build().unwrap();
+    let feed = &mut feeds[index];
+
+    match runtime.block_on(parser::pull(feed.url.as_str(), feed.filename.as_str(), &client)) {
+        Ok(_) => {
+            println!("Updated {}", feed.filename);
+        }
+        Err(e) => {
+            println!("Error updating {}: {}", feed.filename, e);
+        }
+    }
+
+    let filename = format!("{}.log", source);
+    FeedMeta::re_index_and_mark_all_read(filename.as_str(), feed).unwrap();
+
+    FeedMeta::save(feeds);
     println!("Saved.");
 }
 

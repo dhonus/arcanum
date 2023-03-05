@@ -25,7 +25,7 @@
         margin: 0!important;
     }
     div.collapsible {
-        padding: .3rem;
+        padding: 0 .3rem;
     }
 
     button {
@@ -33,7 +33,7 @@
         justify-content: left;
         align-items: center;
         gap: .6rem;
-        margin: 0;
+        margin: .3rem 0;
         padding: .6rem 0.5rem;
         background: none;
         color: whitesmoke;
@@ -44,10 +44,10 @@
         border: 1px solid transparent;
     }
     button:hover {
-    background: #2f2f2f;
-    border: 1px solid #3d3d3d;
-    box-shadow: 0 0 5px 1px #1c1c1c;
-    cursor: pointer;
+        background: #2f2f2f;
+        border: 1px solid #3d3d3d!important;
+        box-shadow: 0 0 5px 1px #1c1c1c;
+        cursor: pointer;
     }
 
     button img{

@@ -38,7 +38,15 @@ pub async fn pull(url: &str, filename: &str, client: &Client) -> Result<(), Stri
 
 pub fn parse(file: String) -> Channel {
     let xmlfile = File::open(file.clone()).unwrap();
-    let channel = Channel::read_from(BufReader::new(xmlfile)).unwrap();
-    //println!("Channel: {:?}", channel);
-    return channel;
+    let channel = Channel::read_from(BufReader::new(xmlfile));
+    return match channel {
+        Ok(channel) => channel,
+        Err(err) => {
+            let mut bad_channel = Channel::default();
+            bad_channel.title = "Error parsing".to_string();
+            bad_channel.description = format!("{} cannot be parsed because: {}. To fix, try re-adding the feed, or checking the source website for errors.", file, err).to_string();
+            bad_channel
+        }
+    }
+
 }

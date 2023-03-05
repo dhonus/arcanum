@@ -18,8 +18,8 @@
   }
   import { writable } from 'svelte/store';
 
-  const readBuffer = writable([]);
-  const readDict = writable({});
+  let readBuffer = writable([]);
+  let readDict = writable({});
 
   let readBufferValue = [];
   let readDictValue = {};
@@ -54,7 +54,10 @@
       warning = "Please enter a valid URL starting with http!";
       return;
     }
-    let __feeds__ = await invoke("feed", { url, category });
+    let __feeds__ = await invoke("feed", { url, category }).catch((e) => {
+      console.log(e);
+      warning = e;
+    });
     console.log(__feeds__);
     feeds = __feeds__;
     url = "";
@@ -77,13 +80,25 @@
     }
   }
   async function updateFeed(url){
-    console.log(url, "is the thing");
     let __feeds__ = await invoke("update_feed", { url }).catch((e) => {
       console.log(e);
     });
     feeds = __feeds__;
     await loadFeed(url);
     console.log(__feeds__);
+    readBuffer.set([]);
+    readDict.set({});
+  }
+
+  async function readFeed(url){
+    let __feeds__ = await invoke("read_feed", { url }).catch((e) => {
+      console.log(e);
+    });
+    feeds = __feeds__;
+    await loadFeed(url);
+    console.log(__feeds__);
+    readBuffer.set([]);
+    readDict.set({});
   }
 
   async function updateAll(){
@@ -175,8 +190,10 @@
             <img src="/spinner.gif"/>
         {/if}
     </div>
-
-    <button on:click={updateAll} class="update_button">Update feeds</button>
+    <button on:click={updateAll} class="update_button">
+      <img src="/iconmonstr-refresh-lined.svg"  />
+      <p>Update feeds</p>
+    </button>
     </div>
     {#each Object.entries(feeds) as [key, category]}
       <CollapsibleSection headerText={key} >
@@ -200,12 +217,19 @@
         {currentFeed.description}
       </div>
       <div class="meta-control">
+        <span>
+          <button class="update"
+                  on:click={updateFeed(currentFeed.filename)} title="Update feed">
+            <img src="/iconmonstr-refresh-lined.svg"  />
+            <p>Update</p>
+          </button>
+          <button class="update"
+                  on:click={readFeed(currentFeed.filename)} title="Mark all as read">
+            <img src="/iconmonstr-eye-check-lined.svg"  />
+          </button>
+        </span>
         <button class="update"
-                on:click={updateFeed(currentFeed.filename)}>
-          <img src="/iconmonstr-refresh-lined.svg"  />
-        </button>
-        <button class="update"
-                on:click={deleteFeed(currentFeed.filename)}>
+                on:click={deleteFeed(currentFeed.filename)} title="Delete feed">
           <img src="/iconmonstr-trash-can-28.svg"  />
         </button>
       </div>

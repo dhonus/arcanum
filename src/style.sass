@@ -109,6 +109,17 @@ div.layout
       button.update_button
         margin: .6rem .6rem .3rem .6rem
         width: auto
+        display: flex
+        flex-direction: row
+        gap: .3rem
+        p
+          font-size: .8rem
+          margin: 0
+          color: black!important
+        img
+          width: 1rem
+          height: 1rem
+          filter: opacity(0.8) invert(1)
     div.feed
       cursor: pointer
       display: flex
@@ -117,6 +128,7 @@ div.layout
       padding: 0.4rem 1.6rem
       border-radius: 7px
       border: 1px solid transparent
+      margin: .3rem 0
       p
         font-size: 1rem
         margin: 0
@@ -205,7 +217,7 @@ div.layout
     div.meta-control
       display: flex
       flex-direction: row
-      justify-content: right
+      justify-content: space-between
       background: #2f2f2f
       padding: .4rem
       gap: .5rem
@@ -213,15 +225,23 @@ div.layout
       border-radius: 0 0 7px 7px
       border: 1px solid $border-color
       border-top: 0px
+      span
+        display: flex
+        flex-direction: row
+        gap: .5rem
       button.update
         display: flex
         justify-content: center
         align-items: center
         border: none
         background-color: #dcdcdc
-        border-radius: 50%
+        border-radius: 7px
         height: 2rem
-        width: 2rem
+        gap: .3rem
+        p
+          font-size: .8rem
+          margin: 0
+          color: black!important
         &:hover
           background-color: #c0c0c0
           cursor: pointer
@@ -290,9 +310,10 @@ div.layout
           height: 1rem
           filter: opacity(0.8)
 
-/* width */
 ::-webkit-scrollbar
   width: 0
+main.container div.right::-webkit-scrollbar
+  width: 2px
 
 /* Track */
 ::-webkit-scrollbar-track
@@ -300,7 +321,7 @@ div.layout
 
 /* Handle */
 ::-webkit-scrollbar-thumb
-  background: #5d6069
+  background: #555
   border-radius: 5px
 
 /* Handle on hover */
