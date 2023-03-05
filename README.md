@@ -1,6 +1,6 @@
 # Arcanum RSS
 
-This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use every day to read my feeds. Does not cache images, online only.
+This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use every day to read my feeds. Does not cache images, or other media. Just the text, which I find is sufficient for offline reading.
 
 ![img](screenshot.png)
 
