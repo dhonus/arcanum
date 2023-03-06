@@ -8,7 +8,7 @@ use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::fs::{OpenOptions};
 use tauri::api::path;
 use std::time::Duration;
-
+use chrono::{DateTime};
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
@@ -347,10 +347,27 @@ pub fn delete(source: &str) {
     println!("Saved.");
 }
 
+// RFC 2822 date sorting
+fn sort_by_date(feeds: &Vec<FeedMeta>) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
+    let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
+    for feed in feeds.iter() {
+        let mut f = feed.clone();
+        f.feed.items.sort_by(|a, b| {
+            let date_a = DateTime::parse_from_rfc2822(&a.pub_date.as_ref().unwrap()).unwrap();
+            let date_b = DateTime::parse_from_rfc2822(&b.pub_date.as_ref().unwrap()).unwrap();
+            date_b.cmp(&date_a)
+        });
+        categorized.entry(f.category.clone())
+            .or_insert(Vec::new())
+            .push(f.clone());
+    }
+    Ok(categorized)
+}
+
 pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>> {
 
-    let path = path::data_dir().unwrap();
-    let the_path = path.to_str().unwrap();
+    let path = path::data_dir().expect("Could not get data dir");
+    let the_path = path.to_str().expect("Could not get path as str");
 
     println!("The current directory is {} and the suggested if", the_path);
 
@@ -364,8 +381,8 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
     }
     let the_path = format!("{}/arcanum/feeds", the_path);
     let root = Path::new(the_path.as_str());
-    assert!(env::set_current_dir(&root).is_ok());
 
+    assert!(env::set_current_dir(&root).is_ok());
 
     // first run returns empty vec
     if url == "" {
@@ -374,16 +391,20 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
         if feeds.len() == 0 {
             categorized.insert("Uncategorized".to_string(), feeds);
         } else {
-            for feed in feeds.iter() {
-                categorized.entry(feed.category.clone())
-                    .or_insert(Vec::new())
-                    .push(feed.clone());
+            return match sort_by_date(&mut feeds.clone()) {
+                Ok(categorized) => Some(categorized),
+                Err(e) => {
+                    println!("Error: {}", e);
+                    None
+                }
             }
         }
         return Some(categorized);
     }
 
-    let runtime = tokio::runtime::Runtime::new().unwrap();
+    let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
+        panic!("failed to create Tokio runtime: {}", e); // we can't really recover from this
+    });
 
     match runtime.block_on(obtain_feed(url)) {
         Ok(channel) => {
@@ -398,14 +419,13 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
 
             feeds.sort_by(|a, b| a.category.cmp(&b.category));
 
-            let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
-            for feed in feeds.iter() {
-                categorized.entry(feed.category.clone())
-                    .or_insert(Vec::new())
-                    .push(feed.clone());
+            return match sort_by_date(&mut feeds.clone()) {
+                Ok(categorized) => Some(categorized),
+                Err(e) => {
+                    println!("Error: {}", e);
+                    None
+                }
             }
-
-            return Some(categorized);
         }
         Err(e) => {
             println!("Real bad Error: {}", e);

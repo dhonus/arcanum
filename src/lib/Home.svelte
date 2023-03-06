@@ -255,7 +255,7 @@
           <p>{postDate}</p>
           <div class="visit">
             <a href="{postLink}" title="Visit the original site">
-              <img src="/iconmonstr-globe-3.svg">
+              <img src="/iconmonstr-globe-3.svg" class="globe">
             </a>
           </div>
         </div>
