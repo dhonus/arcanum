@@ -54,12 +54,10 @@
       warning = "Please enter a valid URL starting with http!";
       return;
     }
-    let __feeds__ = await invoke("feed", { url, category }).catch((e) => {
+    feeds = await invoke("feed", { url, category }).catch((e) => {
       console.log(e);
       warning = e;
     });
-    console.log(__feeds__);
-    feeds = __feeds__;
     url = "";
     category = "";
     warning = "";
@@ -80,23 +78,19 @@
     }
   }
   async function updateFeed(url){
-    let __feeds__ = await invoke("update_feed", { url }).catch((e) => {
+    feeds = await invoke("update_feed", { url }).catch((e) => {
       console.log(e);
     });
-    feeds = __feeds__;
     await loadFeed(url);
-    console.log(__feeds__);
     readBuffer.set([]);
     readDict.set({});
   }
 
   async function readFeed(url){
-    let __feeds__ = await invoke("read_feed", { url }).catch((e) => {
+    feeds = await invoke("read_feed", { url }).catch((e) => {
       console.log(e);
     });
-    feeds = __feeds__;
     await loadFeed(url);
-    console.log(__feeds__);
     readBuffer.set([]);
     readDict.set({});
   }
@@ -106,16 +100,15 @@
     feeds = await invoke("update_all", {  }).catch((e) => {
       warning = e;
     });
+    readBuffer.set([]);
+    readDict.set({});
     updating = false;
   }
   async function deleteFeed(url){
-    console.log(url, "is the thing");
-    let __feeds__ = await invoke("delete_feed", { url }).catch((e) => {
+    feeds = await invoke("delete_feed", { url }).catch((e) => {
       console.log(e);
     });
-    feeds = __feeds__;
     await loadFeed(url);
-    console.log(__feeds__);
     await loadFeed("");
   }
   async function renderPost(value) {
@@ -128,11 +121,9 @@
     postTitle = value.title;
     postDate = value.pub_date;
     postLink = value.link;
-    console.log(value);
 
     //readBuffer.push(value.guid.value);
     readBuffer.update(buffer => [...buffer, value.guid.value]);
-    console.log(readBuffer)
 
     // here we add the feed that is being read to the readDict; this is so that the little "not read" bubble
     // is only shown if the post is not read in any of the feeds
