@@ -21,12 +21,18 @@ fn feed(_url: &str, _category: &str) -> Result<HashMap<String, Vec<FeedMeta>>, S
 #[tauri::command]
 fn mark_read(url: &str, guid: &str){
     println!("Marking {} as read", guid);
-    routes::rss::mark_read(url, guid);
+    match routes::rss::mark_read(url, guid) {
+        Ok(_) => println!("Marked {} as read", guid),
+        Err(e) => println!("Error marking as read: {}", e),
+    }
 }
 
 #[tauri::command]
 fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
-    routes::rss::update(url);
+    match routes::rss::update(url) {
+        Ok(_) => println!("Updated feed"),
+        Err(e) => println!("Error updating feed: {}", e),
+    }
 
     let data = routes::rss::main( "", "");
     match data {
@@ -37,7 +43,10 @@ fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 
 #[tauri::command]
 fn read_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
-    routes::rss::read(url);
+    match routes::rss::read(url) {
+        Ok(_) => println!("Read feed"),
+        Err(e) => println!("Error reading feed: {}", e),
+    }
 
     let data = routes::rss::main( "", "");
     match data {
@@ -48,7 +57,10 @@ fn read_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 
 #[tauri::command]
 fn update_all() -> Result<HashMap<String, Vec<FeedMeta>>, String> {
-    routes::rss::update_all();
+    match routes::rss::update_all() {
+        Ok(_) => println!("Updated all feeds"),
+        Err(e) => println!("Error updating all feeds: {}", e),
+    }
     let data = routes::rss::main("", "");
     match data {
         Ok(feeds) => Ok(feeds.clone()),
@@ -58,7 +70,10 @@ fn update_all() -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 
 #[tauri::command]
 fn delete_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
-    routes::rss::delete(url);
+    match routes::rss::delete(url) {
+        Ok(_) => println!("Deleted feed"),
+        Err(e) => println!("Error deleting feed: {}", e),
+    }
     let data = routes::rss::main( "", "");
     match data {
         Ok(feeds) => Ok(feeds.clone()),

@@ -154,7 +154,7 @@
 <div class="layout">
   <div class="left">
     <div class="identity">
-      <img src="icon.png">
+      <img src="icon.png" alt="icon">
       <h4>Arcanum RSS</h4>
     </div>
     <div class="adding">
@@ -166,17 +166,17 @@
             <input placeholder="Category" bind:value={category} />
           </div>
           <button on:click={feed} class="add_button">
-            <img src="/iconmonstr-plus-lined.svg"/> Add feed
+            <img src="/iconmonstr-plus-lined.svg" alt="add feed"/> Add feed
           </button>
         </div>
     </CollapsibleSection>
     <div class="spinner">
         {#if updating}
-            <img src="/spinner.gif"/>
+            <img src="/spinner.gif" alt="spinner"/>
         {/if}
     </div>
     <button on:click={updateAll} class="update_button">
-      <img src="/iconmonstr-refresh-lined.svg"  />
+      <img src="/iconmonstr-refresh-lined.svg" alt="refresh"/>
       <p>Update feeds</p>
     </button>
     </div>
@@ -205,17 +205,17 @@
         <span>
           <button class="update"
                   on:click={updateFeed(currentFeed.filename)} title="Update feed">
-            <img src="/iconmonstr-refresh-lined.svg"  />
+            <img src="/iconmonstr-refresh-lined.svg" alt="refresh" />
             <p>Update</p>
           </button>
           <button class="update"
                   on:click={readFeed(currentFeed.filename)} title="Mark all as read">
-            <img src="/iconmonstr-eye-check-lined.svg"  />
+            <img src="/iconmonstr-eye-check-lined.svg" alt="mark read"/>
           </button>
         </span>
         <button class="update"
                 on:click={deleteFeed(currentFeed.filename)} title="Delete feed">
-          <img src="/iconmonstr-trash-can-28.svg"  />
+          <img src="/iconmonstr-trash-can-28.svg"  alt="delete"/>
         </button>
       </div>
     {/if}
@@ -240,7 +240,7 @@
           <p>{postDate}</p>
           <div class="visit">
             <a href="{postLink}" title="Visit the original site">
-              <img src="/iconmonstr-globe-3.svg" class="globe">
+              <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe">
             </a>
           </div>
         </div>
