@@ -257,6 +257,7 @@ pub fn update(source: &str) {
     println!("Saved.");
 }
 
+use futures::future::join_all;
 pub fn update_all() {
     let feeds: Vec<FeedMeta> = FeedMeta::load();
     if feeds.len() == 0 {
@@ -268,19 +269,19 @@ pub fn update_all() {
         .timeout(Duration::from_secs(8))
         .build().unwrap();
 
-    let runtime = tokio::runtime::Runtime::new().unwrap();
-
     let mut updated_feeds = Vec::with_capacity(feeds.len());
     for feed in feeds.iter() {
-        let updated_feed = feed.clone();
-        //parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str(), &client);
-        match runtime.block_on(parser::pull(updated_feed.url.as_str(), updated_feed.filename.as_str(), &client)) {
-            Ok(_) => println!("Updated {}", updated_feed.filename),
-            Err(_) => println!("Error updating {}", updated_feed.filename),
-        }
-        updated_feeds.push(updated_feed);
+        updated_feeds.push(parser::pull(feed.url.as_str(), feed.filename.as_str(), &client));
     }
-    FeedMeta::save(updated_feeds);
+
+    // we create a runtime to run out updates in parallel
+    let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
+        panic!("failed to create Tokio runtime: {}", e); // we can't really recover from this
+    });
+
+    runtime.block_on(join_all(updated_feeds));
+
+    FeedMeta::save(feeds);
     println!("Saved.");
 }
 

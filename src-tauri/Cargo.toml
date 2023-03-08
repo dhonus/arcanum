@@ -24,6 +24,7 @@ quick-xml = "0.27.1"
 csv = "1.2.0"
 rand = "0.8.5"
 chrono = "0.4.23"
+futures = "0.3.26"
 
 [features]
 # by default Tauri runs in production mode

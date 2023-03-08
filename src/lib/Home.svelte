@@ -103,15 +103,9 @@
 
   async function updateAll(){
     updating = true;
-    /*await invoke("update_all", {  }).catch((e) => {
+    feeds = await invoke("update_all", {  }).catch((e) => {
       warning = e;
-    });*/
-
-    for (const [key, value] of Object.entries(feeds)) {
-      for (let i = 0; i < value.length; i++){
-        await updateFeed(value[i].filename);
-      }
-    }
+    });
     updating = false;
   }
   async function deleteFeed(url){
