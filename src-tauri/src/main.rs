@@ -13,7 +13,7 @@ mod routes;
 fn feed(_url: &str, _category: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     let data = routes::rss::main(_url, _category);
     match data {
-        Some(feeds) => Ok(feeds.clone()),
+        Ok(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }
@@ -30,7 +30,7 @@ fn update_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 
     let data = routes::rss::main( "", "");
     match data {
-        Some(feeds) => Ok(feeds.clone()),
+        Ok(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }
@@ -41,7 +41,7 @@ fn read_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
 
     let data = routes::rss::main( "", "");
     match data {
-        Some(feeds) => Ok(feeds.clone()),
+        Ok(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }
@@ -51,7 +51,7 @@ fn update_all() -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     routes::rss::update_all();
     let data = routes::rss::main("", "");
     match data {
-        Some(feeds) => Ok(feeds.clone()),
+        Ok(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to parse the feed. Please verify the URL is correct.".to_string()),
     }
 }
@@ -61,7 +61,7 @@ fn delete_feed(url: &str) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
     routes::rss::delete(url);
     let data = routes::rss::main( "", "");
     match data {
-        Some(feeds) => Ok(feeds.clone()),
+        Ok(feeds) => Ok(feeds.clone()),
         _ => Err("Failed to delete the feed. Ooops!".to_string()),
     }
 }

@@ -10,13 +10,14 @@ use tauri::api::path;
 use std::time::Duration;
 use chrono::{DateTime};
 
+
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
     let content = reqwest::get(source)
         .await?
         .bytes()
         .await?;
     let channel = Channel::read_from(&content[..])?;
-    channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
+    channel.write_to(::std::io::sink())?; // write to the channel to a writer
     Ok(channel)
 }
 
@@ -31,7 +32,7 @@ pub struct FeedMeta {
 }
 
 impl FeedMeta {
-    fn new(url: &str, mut category: &str) -> FeedMeta {
+    fn new(url: &str, mut category: &str) -> Result<FeedMeta, reqwest::Error> {
         if category == ""{
             category = "Uncategorized";
         }
@@ -54,9 +55,11 @@ impl FeedMeta {
         let client = reqwest::Client::builder()
             .gzip(true)
             .timeout(Duration::from_secs(8))
-            .build().unwrap();
+            .build()?;
 
-        let runtime = tokio::runtime::Runtime::new().unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
+            panic!("failed to create Tokio runtime: {}", e); // we can't really recover from this
+        });
         if !path.exists() {
             match runtime.block_on(parser::pull(url, filename.as_str(), &client)) {
                 Ok(_) => println!("File created"),
@@ -66,16 +69,16 @@ impl FeedMeta {
         let feed = parser::parse(filename.clone());
         let unread: i32 = feed.items().len() as i32;
 
-        FeedMeta {
+        Ok(FeedMeta {
             url: url.to_string(),
             filename,
             category: category.to_string(),
             feed,
             read: Vec::new(),
             unread
-        }
+        })
     }
-    fn load() -> Vec<FeedMeta> {
+    fn load() -> Result<Vec<FeedMeta>, Box<dyn Error>> {
         match std::fs::create_dir("../feeds"){
             Ok(_) => println!("Created dir"),
             Err(_) => println!("Dir already exists"),
@@ -85,18 +88,18 @@ impl FeedMeta {
             Ok(_) => println!("File exists"),
             Err(_) => {
                 println!("File does not exist");
-                return feeds;
+                return Ok(feeds);
             }
         }
-        let mut reader = csv::Reader::from_path("../feeds/db.csv").unwrap();
+        let mut reader = csv::Reader::from_path("../feeds/db.csv")?;
         let headers = reader.headers();
         println!("Headers: {:?}", headers);
         for result in reader.records() {
             // The iterator yields Result<StringRecord, Error>, so we check the
             // error here.
-            let record = result.unwrap();
+            let record = result?;
             assert_eq!(record.len(), 4);
-            let mut meta = FeedMeta::new(record.get(0).unwrap(), record.get(3).unwrap());
+            let mut meta = FeedMeta::new(record.get(0).unwrap(), record.get(3).unwrap())?;
             println!("{:?}", record);
 
             let logfile_name = format!("{}.log", meta.filename.clone());
@@ -126,9 +129,9 @@ impl FeedMeta {
             feeds.push(meta);
         }
 
-        return feeds;
+        return Ok(feeds);
     }
-    fn save(mut feeds: Vec<FeedMeta>) -> Vec<FeedMeta> {
+    fn save(mut feeds: Vec<FeedMeta>) -> Result<Vec<FeedMeta>, Box<dyn Error>> {
         match std::fs::create_dir("../feeds"){
             Ok(_) => println!("Created dir"),
             Err(_) => println!("Dir already exists"),
@@ -138,14 +141,14 @@ impl FeedMeta {
         feeds.sort_by(|a, b| a.url.cmp(&b.url));
         feeds.dedup_by(|a, b| a.url == b.url);
 
-        let mut writer = csv::Writer::from_path("../feeds/db.csv").unwrap();
+        let mut writer = csv::Writer::from_path("../feeds/db.csv")?;
 
-        writer.write_record(&["url", "filename", "feed", "category"]).unwrap();
+        writer.write_record(&["url", "filename", "feed", "category"])?;
         for entry in feeds.iter() {
-            writer.write_record(&[entry.url.as_str(), entry.filename.as_str(), entry.feed.title.as_str(), entry.category.as_str()]).unwrap();
+            writer.write_record(&[entry.url.as_str(), entry.filename.as_str(), entry.feed.title.as_str(), entry.category.as_str()])?;
         }
         writer.flush().expect("Failed to flush writer");
-        return feeds;
+        return Ok(feeds);
     }
     fn read_log(filename: &str) -> Result<Vec<String>, std::io::Error> {
         let file = OpenOptions::new()
@@ -174,7 +177,7 @@ impl FeedMeta {
             writer.write(line.guid.unwrap().value.as_bytes())?;
             writer.write(b"\n")?;
         }
-        writer.flush().unwrap();
+        writer.flush()?;
 
         Ok(())
     }
@@ -209,27 +212,28 @@ impl FeedMeta {
             writer.write(line.as_bytes())?;
             writer.write(b"\n")?;
         }
-        writer.flush().unwrap();
+        writer.flush()?;
 
         Ok(())
     }
 }
 
-pub fn mark_read(url: &str, guid: &str) {
+pub fn mark_read(url: &str, guid: &str) -> Result<(), Box<dyn Error>>{
     let filename = url
         .replace("https://", "")
           .replace("/", "_")
         .replace(":", "_")
         .replace(".", "_");
     let filename = format!("../feeds/{}/feed.xml.log", filename);
-    FeedMeta::modify_file(filename.as_str(), guid).unwrap();
+    FeedMeta::modify_file(filename.as_str(), guid)?;
+    Ok(())
 }
 
-pub fn update(source: &str) {
-    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+pub fn update(source: &str) -> Result<(), Box<dyn Error>>{
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load()?;
     if feeds.len() == 0 {
         println!("No feeds");
-        return;
+        return Ok(());
     }
     let mut index = 0;
     for (i, feed) in feeds.iter().enumerate() {
@@ -237,12 +241,14 @@ pub fn update(source: &str) {
             index = i;
         }
     }
-    let runtime = tokio::runtime::Runtime::new().unwrap();
+    let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
+        panic!("failed to create Tokio runtime: {}", e); // we can't really recover from this
+    });
 
     let client = reqwest::Client::builder()
         .gzip(true)
         .timeout(Duration::from_secs(8))
-        .build().unwrap();
+        .build()?;
     let feed = &mut feeds[index];
     match runtime.block_on(parser::pull(feed.url.as_str(), feed.filename.as_str(), &client)) {
         Ok(_) => {
@@ -253,21 +259,22 @@ pub fn update(source: &str) {
         }
     }
 
-    FeedMeta::save(feeds);
+    FeedMeta::save(feeds)?;
     println!("Saved.");
+    Ok(())
 }
 
 use futures::future::join_all;
-pub fn update_all() {
-    let feeds: Vec<FeedMeta> = FeedMeta::load();
+pub fn update_all() -> Result<(), Box<dyn Error>> {
+    let feeds: Vec<FeedMeta> = FeedMeta::load()?;
     if feeds.len() == 0 {
         println!("No feeds");
-        return;
+        return Ok(());
     }
     let client = reqwest::Client::builder()
         .gzip(true)
         .timeout(Duration::from_secs(8))
-        .build().unwrap();
+        .build()?;
 
     let mut updated_feeds = Vec::with_capacity(feeds.len());
     for feed in feeds.iter() {
@@ -281,15 +288,16 @@ pub fn update_all() {
 
     runtime.block_on(join_all(updated_feeds));
 
-    FeedMeta::save(feeds);
+    FeedMeta::save(feeds)?;
     println!("Saved.");
+    Ok(())
 }
 
-pub fn read(source: &str) {
-    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+pub fn read(source: &str) -> Result<(), Box<dyn Error>> {
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load()?;
     if feeds.len() == 0 {
         println!("No feeds");
-        return;
+        return Ok(());
     }
     let mut index = 0;
     for (i, feed) in feeds.iter().enumerate() {
@@ -297,12 +305,14 @@ pub fn read(source: &str) {
             index = i;
         }
     }
-    let runtime = tokio::runtime::Runtime::new().unwrap();
+    let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
+        panic!("failed to create Tokio runtime: {}", e); // we can't really recover from this
+    });
 
     let client = reqwest::Client::builder()
         .gzip(true)
         .timeout(Duration::from_secs(8))
-        .build().unwrap();
+        .build()?;
     let feed = &mut feeds[index];
 
     match runtime.block_on(parser::pull(feed.url.as_str(), feed.filename.as_str(), &client)) {
@@ -315,14 +325,15 @@ pub fn read(source: &str) {
     }
 
     let filename = format!("{}.log", source);
-    FeedMeta::re_index_and_mark_all_read(filename.as_str(), feed).unwrap();
+    FeedMeta::re_index_and_mark_all_read(filename.as_str(), feed)?;
 
-    FeedMeta::save(feeds);
+    FeedMeta::save(feeds)?;
     println!("Saved.");
+    Ok(())
 }
 
-pub fn delete(source: &str) {
-    let mut feeds: Vec<FeedMeta> = FeedMeta::load();
+pub fn delete(source: &str) -> Result<(), Box<dyn Error>>{
+    let mut feeds: Vec<FeedMeta> = FeedMeta::load()?;
     let mut index = 0;
     for (i, feed) in feeds.iter().enumerate() {
         if feed.filename == source {
@@ -332,7 +343,7 @@ pub fn delete(source: &str) {
 
     if index == 0 {
         println!("No such feed");
-        return;
+        return Ok(());
     }
 
     let feed = &mut feeds[index];
@@ -344,8 +355,9 @@ pub fn delete(source: &str) {
 
     feeds.remove(index);
 
-    FeedMeta::save(feeds);
+    FeedMeta::save(feeds)?;
     println!("Saved.");
+    Ok(())
 }
 
 // RFC 2822 date sorting
@@ -365,7 +377,7 @@ fn sort_by_date(feeds: &Vec<FeedMeta>) -> Result<HashMap<String, Vec<FeedMeta>>,
     Ok(categorized)
 }
 
-pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>> {
+pub fn main(url: &str, category: &str) -> Result<HashMap<String, Vec<FeedMeta>>, Box<dyn Error>> {
 
     let path = path::data_dir().expect("Could not get data dir");
     let the_path = path.to_str().expect("Could not get path as str");
@@ -388,19 +400,14 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
     // first run returns empty vec
     if url == "" {
         let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
-        let feeds = FeedMeta::load();
+        let feeds = FeedMeta::load()?;
         if feeds.len() == 0 {
             categorized.insert("Uncategorized".to_string(), feeds);
         } else {
-            return match sort_by_date(&mut feeds.clone()) {
-                Ok(categorized) => Some(categorized),
-                Err(e) => {
-                    println!("Error: {}", e);
-                    None
-                }
-            }
+            categorized = sort_by_date(&mut feeds.clone())?;
+            return Ok(categorized)
         }
-        return Some(categorized);
+        return Ok(categorized);
     }
 
     let runtime = tokio::runtime::Runtime::new().unwrap_or_else(|e| {
@@ -409,28 +416,23 @@ pub fn main(url: &str, category: &str) -> Option<HashMap<String, Vec<FeedMeta>>>
 
     match runtime.block_on(obtain_feed(url)) {
         Ok(channel) => {
-            channel.write_to(::std::io::sink()).unwrap(); // write to the channel to a writer
+            channel.write_to(::std::io::sink())?; // write to the channel to a writer
 
-            let mut feeds: Vec<FeedMeta> = FeedMeta::load();
-            let feed_meta = FeedMeta::new(url.clone(), category.clone());
+            let mut feeds: Vec<FeedMeta> = FeedMeta::load()?;
+            let feed_meta = FeedMeta::new(url.clone(), category.clone())?;
             feeds.push(feed_meta);
 
-            FeedMeta::save(feeds);
-            let mut feeds = FeedMeta::load();
+            FeedMeta::save(feeds)?;
+            let mut feeds = FeedMeta::load()?;
 
             feeds.sort_by(|a, b| a.category.cmp(&b.category));
 
-            return match sort_by_date(&mut feeds.clone()) {
-                Ok(categorized) => Some(categorized),
-                Err(e) => {
-                    println!("Error: {}", e);
-                    None
-                }
-            }
+            let categorized = sort_by_date(&mut feeds.clone())?;
+            return Ok(categorized);
         }
         Err(e) => {
             println!("Real bad Error: {}", e);
         }
     }
-    None
+    return Err("Error".into());
 }
