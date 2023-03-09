@@ -1,11 +1,11 @@
 [package]
 name = "arcanum"
-version = "1.0.6"
+version = "1.0.9"
 description = "A Tauri App"
-authors = ["you"]
-license = ""
-repository = ""
-edition = "2021"
+authors = ["dhonus"]
+license = "GPL-3.0"
+repository = "https://github.com/dhonus/arcanum"
+edition = "2023"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
