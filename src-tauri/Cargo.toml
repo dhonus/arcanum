@@ -10,12 +10,12 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-tauri-build = { version = "1.2", features = [] }
+tauri-build = { version = "2.0.0-alpha.0", features = [] }
 
 [dependencies]
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
-tauri = { version = "1.2", features = ["fs-all", "shell-open"] }
+tauri = { version = "2.0.0-alpha.0", features = ["fs-all", "shell-open"] }
 reqwest = { version = "0.11.14", features = ["blocking", "json", "gzip"] }
 rss = {version = "2.0.2", features = ["serde"] }
 tokio = "1.25.0"
@@ -23,7 +23,7 @@ csv = "1.2.1"
 rand = "0.8.5"
 chrono = "0.4.23"
 futures = "0.3.26"
-
+openssl-sys = { version = "0.9.70", features = ["vendored"] }
 [features]
 # by default Tauri runs in production mode
 # when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
@@ -31,3 +31,6 @@ default = ["custom-protocol"]
 # this feature is used used for production builds where `devPath` points to the filesystem
 # DO NOT remove this
 custom-protocol = ["tauri/custom-protocol"]
+
+[lib]
+crate-type = ["staticlib", "cdylib", "rlib"]
