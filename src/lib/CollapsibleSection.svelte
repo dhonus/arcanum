@@ -34,12 +34,12 @@
         align-items: center;
         gap: .6rem;
         margin: .3rem 0;
-        padding: .6rem 0.5rem;
+        padding: .3rem 0.5rem;
         background: none;
         color: whitesmoke;
         border-radius: 7px;
         font-weight: bold;
-        font-size: .9rem;
+        font-size: .8rem;
         width: 100%;
         border: 1px solid transparent;
     }
