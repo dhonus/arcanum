@@ -1,5 +1,3 @@
-extern crate xml;
-
 use std::fs::File;
 use std::io::BufReader;
 use std::{io};
