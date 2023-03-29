@@ -8,6 +8,9 @@
   let warning = "";
   let updating = false;
 
+  let selected_element = null;
+  let selected_column = null;
+
   // to get values when Updating a feed
   let feeds = {};
   let currentFeed = {
@@ -63,6 +66,7 @@
     warning = "";
   }
   async function loadFeed(fileName){
+    selected_column = "left";
     for (const [key, value] of Object.entries(feeds)) {
       for (let j = 0; j < value.length; j++){
         if (value[j].filename === fileName || fileName === "") {
@@ -112,6 +116,7 @@
     await loadFeed("");
   }
   async function renderPost(value) {
+    selected_column = "center";
     __guid__ = value.guid.value;
     postBody = "";
     if (value.description !== null) postBody = value.description;
@@ -150,7 +155,112 @@
   async function markPostAsRead() {
     await invoke("mark_read", { url:__url__, guid:__guid__ });
   }
+
+  // keyboard navigation
+
+  function on_key_down(event) {
+    if (event.repeat) return;
+
+    if(selected_element === null) {
+        // get first element with class .active in div.center
+        selected_element = document.querySelector("div.center .active");
+        selected_column = "center";
+        // select the one after the first element with class .active in div.center
+        if (selected_element === null) {
+              selected_element = document.querySelector("div.left *");
+              selected_column = "left";
+        }
+    }
+    console.log(selected_element);
+
+    if (selected_element === null) return;
+
+    const original = selected_element;
+    switch (event.key) {
+      case "h":
+        console.log("left");
+        if (selected_column === "center") {
+          // get all elements with class .active in div.left
+          selected_element = document.querySelector("div.left .active");
+          selected_column = "left";
+        }
+        selected_element.click();
+        break;
+      case "j":
+        console.log("down");
+        if (selected_column === "center") {
+          selected_element = selected_element.nextElementSibling;
+        }
+        if (selected_column === "left") {
+          if (selected_element.nextElementSibling === null) {
+            // get the current element's parent
+            selected_element = selected_element.parentElement;
+            selected_element = selected_element.parentElement;
+            selected_element = selected_element.nextElementSibling;
+            // get first child that is div.feed
+            try {
+              selected_element = selected_element.querySelector("div.feed");
+            } catch (e) {
+              selected_element = null;
+            }
+          }
+          else {
+              selected_element = selected_element.nextElementSibling;
+          }
+        }
+
+        if (selected_element === null) {
+          selected_element = original;
+          return;
+        }
+        selected_element.click();
+        break;
+      case "k":
+        console.log("up");
+        if (selected_column === "center") {
+          selected_element = selected_element.previousElementSibling;
+        }
+        if (selected_column === "left") {
+          if (selected_element.previousElementSibling === null) {
+            // get the current element's parent
+            selected_element = selected_element.parentElement;
+            selected_element = selected_element.parentElement;
+            selected_element = selected_element.previousElementSibling;
+            // get first child that is div.feed
+            try {
+              selected_element = selected_element.querySelector("div.feed");
+            } catch (e) {
+              selected_element = null;
+            }
+          }
+          else {
+            selected_element = selected_element.previousElementSibling;
+          }
+        }
+
+        if (selected_element === null) {
+            selected_element = original;
+            return;
+        }
+        selected_element.click();
+        break;
+      case "l":
+        console.log("right");
+        if (selected_column === "left") {
+          // get all elements with class .active in div.center
+          selected_element = document.querySelector("div.center .entry");
+          if (selected_element !== null) {
+            selected_element.click();
+          }
+          selected_column = "center";
+        }
+        break;
+    }
+  }
 </script>
+<svelte:window
+        on:keydown={on_key_down}
+/>
 <div class="layout">
   <div class="left">
     <div class="identity">
@@ -189,6 +299,8 @@
               <span class="count">
                 {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
               </span>
+              {:else }
+              <span class="count" style="opacity: 0;"></span>
             {/if}
           </div>
         {/each}
