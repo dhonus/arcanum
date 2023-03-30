@@ -1,15 +1,26 @@
 <script>
-    // based on suggestions from:
-    // Inclusive Components by Heydon Pickering https://inclusive-components.design/collapsible-sections/
-    export let headerText;
-    export let expanded_in;
+    import { onMount } from "svelte";
 
-    let expanded = !expanded_in;
+    export let headerText;
+
+    let expanded;
+
+    onMount(() => {
+        if (localStorage.getItem(headerText) === null) {
+            localStorage.setItem(headerText, true);
+            expanded = true;
+        } else {
+            expanded = localStorage.getItem(headerText) === "true";
+        }
+    });
 </script>
 
 <div class="collapsible">
     <h3>
-        <button aria-expanded={expanded} on:click={() => expanded = !expanded}>
+        <button aria-expanded={expanded} on:click={() => {
+            expanded = !expanded;
+            localStorage.setItem(headerText, expanded);
+        }}>
             <img src="/iconmonstr-arrow-80.svg">
             {headerText}
         </button>

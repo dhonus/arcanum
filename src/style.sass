@@ -25,11 +25,13 @@ div.layout
   display: flex
   flex-direction: row
   height: 100vh
+  overflow-y: hidden
   div.left
     flex: 1
     background: #1d1d1d
     height: 100vh
     overflow-y: auto
+    border-top: 1px solid transparent
     div.identity
       h4
         font-family: 'Source Sans Pro', sans-serif
@@ -162,6 +164,7 @@ div.layout
     margin: 0
     border-left: 1px solid $border-color
     border-right: 1px solid $border-color
+    border-top: 1px solid transparent
     div.entry
       display: flex
       position: relative
@@ -259,6 +262,7 @@ div.layout
     height: 100vh
     overflow-y: auto
     padding: 0 1rem
+    border: 1px solid transparent
     article
       width: 92%
       margin: auto
@@ -307,6 +311,10 @@ div.layout
           width: 1rem
           height: 1rem
           filter: opacity(0.8)
+  div.selected_column
+    // inset blue box shadow only on the sides
+    border-top: 1px solid darkcyan
+    border-radius: 0
 
 ::-webkit-scrollbar
   width: 0

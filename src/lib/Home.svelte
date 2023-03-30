@@ -10,6 +10,8 @@
 
   let selected_element = null;
   let selected_column = null;
+  let y_scroll;
+  let vim = false;
 
   // to get values when Updating a feed
   let feeds = {};
@@ -19,6 +21,12 @@
     read: [],
     filename: "",
   }
+
+  function handleMouse(event) {
+    event.preventDefault();
+    vim = false;
+  }
+
   import { writable } from 'svelte/store';
 
   let readBuffer = writable([]);
@@ -159,53 +167,72 @@
   // keyboard navigation
 
   function on_key_down(event) {
-    if (event.repeat) return;
+    // check if the user is typing in an input field
+    if (document.activeElement.tagName === "INPUT") return;
+    //if (event.repeat) return;
+
+    vim = true;
 
     if(selected_element === null) {
-        // get first element with class .active in div.center
-        selected_element = document.querySelector("div.center .active");
-        selected_column = "center";
-        // select the one after the first element with class .active in div.center
-        if (selected_element === null) {
-              selected_element = document.querySelector("div.left *");
-              selected_column = "left";
-        }
+      selected_element = document.querySelector("div.left .active");
+      selected_element.click();
+      selected_column = "left";
     }
-    console.log(selected_element);
 
-    if (selected_element === null) return;
+    if (selected_element === null) {
+      return;
+    }
 
     const original = selected_element;
     switch (event.key) {
       case "h":
         console.log("left");
-        if (selected_column === "center") {
-          // get all elements with class .active in div.left
-          selected_element = document.querySelector("div.left .active");
-          selected_column = "left";
+        switch (selected_column) {
+            case "center":
+              // get all elements with class .active in div.left
+              selected_element = document.querySelector("div.left .active");
+              selected_column = "left";
+              break;
+            case "right":
+              // get all elements with class .active in div.center
+              selected_element = document.querySelector("div.center .active");
+              selected_column = "center";
+              break;
         }
         selected_element.click();
         break;
       case "j":
-        console.log("down");
-        if (selected_column === "center") {
-          selected_element = selected_element.nextElementSibling;
-        }
-        if (selected_column === "left") {
-          if (selected_element.nextElementSibling === null) {
-            // get the current element's parent
-            selected_element = selected_element.parentElement;
-            selected_element = selected_element.parentElement;
-            selected_element = selected_element.nextElementSibling;
-            // get first child that is div.feed
-            try {
-              selected_element = selected_element.querySelector("div.feed");
-            } catch (e) {
-              selected_element = null;
-            }
-          }
-          else {
+        switch (selected_column) {
+          case "left": {
+            if (selected_element.nextElementSibling === null) {
+              // get the current element's parent
+              selected_element = selected_element.parentElement;
+              selected_element = selected_element.parentElement;
               selected_element = selected_element.nextElementSibling;
+              // get first child that is div.feed
+              try {
+                selected_element = selected_element.querySelector("div.feed");
+              } catch (e) {
+                selected_element = null;
+              }
+            }
+            else {
+              selected_element = selected_element.nextElementSibling;
+            }
+            break;
+          }
+          case "center": {
+            selected_element = selected_element.nextElementSibling;
+            break;
+          }
+          case "right": {
+            // scroll the page down in svelte
+            if (y_scroll === null) return;
+            y_scroll.scrollTo({
+              top: y_scroll.scrollTop + 100, // The amount to scroll down
+              behavior: 'smooth' // Optional: Add smooth scrolling
+            });
+            break;
           }
         }
 
@@ -216,28 +243,36 @@
         selected_element.click();
         break;
       case "k":
-        console.log("up");
-        if (selected_column === "center") {
-          selected_element = selected_element.previousElementSibling;
-        }
-        if (selected_column === "left") {
-          if (selected_element.previousElementSibling === null) {
-            // get the current element's parent
-            selected_element = selected_element.parentElement;
-            selected_element = selected_element.parentElement;
-            selected_element = selected_element.previousElementSibling;
-            // get first child that is div.feed
-            try {
-              selected_element = selected_element.querySelector("div.feed");
-            } catch (e) {
-              selected_element = null;
+        switch (selected_column) {
+          case "left":
+            if (selected_element.previousElementSibling === null) {
+              // get the current element's parent
+              selected_element = selected_element.parentElement;
+              selected_element = selected_element.parentElement;
+              selected_element = selected_element.previousElementSibling;
+              // get first child that is div.feed
+              try {
+                selected_element = selected_element.querySelector("div.feed");
+              } catch (e) {
+                selected_element = null;
+              }
             }
-          }
-          else {
+            else {
+              selected_element = selected_element.previousElementSibling;
+            }
+            break;
+          case "center":
             selected_element = selected_element.previousElementSibling;
-          }
+            break;
+          case "right":
+            // scroll the page down in svelte
+            if (y_scroll === null) return;
+            y_scroll.scrollTo({
+              top: y_scroll.scrollTop - 100,
+              behavior: 'smooth'
+            });
+            break;
         }
-
         if (selected_element === null) {
             selected_element = original;
             return;
@@ -245,30 +280,35 @@
         selected_element.click();
         break;
       case "l":
-        console.log("right");
-        if (selected_column === "left") {
-          // get all elements with class .active in div.center
-          selected_element = document.querySelector("div.center .entry");
-          if (selected_element !== null) {
-            selected_element.click();
-          }
-          selected_column = "center";
+        switch (selected_column) {
+            case "left":
+              // get all elements with class .active in div.center
+              selected_element = document.querySelector("div.center .entry");
+              if (selected_element !== null) {
+                selected_element.click();
+              }
+              selected_column = "center";
+              break;
+            case "center":
+              selected_element = document.querySelector("div.right");
+              selected_column = "right";
+              break;
         }
-        break;
     }
   }
 </script>
 <svelte:window
         on:keydown={on_key_down}
+        on:mousemove={handleMouse}
 />
 <div class="layout">
-  <div class="left">
+  <div class="{vim && selected_column === 'left' ? 'left selected_column' : 'left'}">
     <div class="identity">
       <img src="icon.png" alt="icon">
       <h4>Arcanum RSS</h4>
     </div>
     <div class="adding">
-    <CollapsibleSection headerText="Add new feed" expanded_in=false>
+    <CollapsibleSection headerText="Add new feed">
       {#if warning.length > 0}<div class="warning">{warning}</div>{/if}
         <div class="entry">
           <div>
@@ -307,7 +347,7 @@
       </CollapsibleSection>
     {/each}
   </div>
-  <div class="center">
+  <div class="{vim && selected_column === 'center' ? 'center selected_column' : 'center'}">
     {#if currentFeed.title !== ""}
       <div class="meta-head" >
         <b>{currentFeed.title}</b>
@@ -345,7 +385,8 @@
     {/each}
     <div class="end">All caught up!</div>
   </div>
-  <div class="right">
+  <div bind:this={y_scroll}
+       class="{vim && selected_column === 'right' ? 'right selected_column' : 'right'}">
     <article>
       {#if postDate !== ""}
         <div class="meta">
