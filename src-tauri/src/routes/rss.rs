@@ -8,14 +8,19 @@ use std::io::{BufRead, BufReader, Seek, SeekFrom, Write};
 use std::fs::{OpenOptions};
 use tauri::api::path;
 use std::time::Duration;
-use chrono::{DateTime};
+use chrono::{DateTime, Local};
 
 
 async fn obtain_feed(source: &str) -> Result<Channel, Box<dyn Error>> {
-    let content = reqwest::get(source)
+    let content = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()?
+        .get(source)
+        .send().await?.bytes().await?;
+    /*let content = reqwest::get(source)
         .await?
         .bytes()
-        .await?;
+        .await?;*/
     let channel = Channel::read_from(&content[..])?;
     channel.write_to(::std::io::sink())?; // write to the channel to a writer
     Ok(channel)
@@ -53,6 +58,7 @@ impl FeedMeta {
         println!("Filename: {}", filename);
         let path = Path::new(filename.as_str());
         let client = reqwest::Client::builder()
+            .danger_accept_invalid_certs(true)
             .gzip(true)
             .timeout(Duration::from_secs(8))
             .build()?;
@@ -361,10 +367,18 @@ pub fn delete(source: &str) -> Result<(), Box<dyn Error>>{
 }
 
 // RFC 2822 date sorting
-fn sort_by_date(feeds: &Vec<FeedMeta>) -> Result<HashMap<String, Vec<FeedMeta>>, String> {
+fn sort_by_date(feeds: &Vec<FeedMeta>) -> Result<HashMap<String, Vec<FeedMeta>>, Box<dyn Error>> {
     let mut categorized: HashMap<String, Vec<FeedMeta>> = HashMap::new();
     for feed in feeds.iter() {
         let mut f = feed.clone();
+        // there is always that one feed that doesn't have a pub_date... who would have thought
+        for item in f.feed.items.iter_mut() {
+            let pub_date = item.pub_date.as_ref();
+            if pub_date.is_none() {
+                let today = Local::now().format("%a, %d %b %Y %T %z").to_string();
+                item.pub_date = Some(today);
+            }
+        }
         f.feed.items.sort_by(|a, b| {
             let date_a = DateTime::parse_from_rfc2822(&a.pub_date.as_ref().unwrap()).unwrap();
             let date_b = DateTime::parse_from_rfc2822(&b.pub_date.as_ref().unwrap()).unwrap();
