@@ -3,6 +3,7 @@
 This is a simple RSS reader written in Rust. 
 The main purpose of this project was to have a simple tool to read my feeds every day.
 The reader doesn't cache images or other media, only the text, which I find sufficient for offline reading.
+Vim keybindings included.
 
 ![img](app.png)
 
