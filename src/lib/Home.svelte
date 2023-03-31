@@ -65,10 +65,16 @@
       warning = "Please enter a valid URL starting with http!";
       return;
     }
-    feeds = await invoke("feed", { url, category }).catch((e) => {
+
+    try {
+      let __feeds = await invoke("feed", { url, category });
+      feeds = __feeds;
+    } catch (e) {
       console.log(e);
       warning = e;
-    });
+      return;
+    }
+
     url = "";
     category = "";
     warning = "";

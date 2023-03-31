@@ -1,8 +1,10 @@
 # Arcanum RSS
 
-This is a simple RSS reader that I made to learn Rust and Tauri. I wanted something quite simple to use every day to read my feeds. Does not cache images, or other media. Just the text, which I find is sufficient for offline reading.
+This is a simple RSS reader written in Rust. 
+The main purpose of this project was to have a simple tool to read my feeds every day.
+The reader doesn't cache images or other media, only the text, which I find sufficient for offline reading.
 
-![img](screenshot.png)
+![img](app.png)
 
 ## How to use
 You can download a prebuilt binary from the [releases](https://github.com/dhonus/arcanum/releases) page. Only linux tested. 
