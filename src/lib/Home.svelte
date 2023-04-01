@@ -1,4 +1,4 @@
-<script xmlns="http://www.w3.org/1999/html">
+<script>
   import { invoke } from "@tauri-apps/api/tauri"
   import CollapsibleSection from './CollapsibleSection.svelte'
 
@@ -289,8 +289,7 @@
           case "left": {
             if (selected_element.nextElementSibling === null) {
               // get the current element's parent
-              selected_element = selected_element.parentElement;
-              selected_element = selected_element.parentElement;
+              selected_element = selected_element.parentElement.parentElement;
               selected_element = selected_element.nextElementSibling;
               // we skip the collapsed folders
               try {
@@ -298,20 +297,15 @@
                   if (selected_element.nextElementSibling === null) break;
                   selected_element = selected_element.nextElementSibling;
                 }
-              } catch (e) {
-                selected_element = null;
-                break;
-              }
-              try {
                 selected_element = selected_element.querySelector("div.feed");
               } catch (e) {
                 selected_element = null;
+                break;
               }
             }
             else {
               selected_element = selected_element.nextElementSibling;
             }
-
             break;
           }
           case "center": {
@@ -328,7 +322,6 @@
             return;
           }
         }
-
         if (selected_element === null) {
           selected_element = original;
           return;
@@ -341,8 +334,7 @@
           case "left":
             if (selected_element.previousElementSibling === null) {
               // get the current element's parent
-              selected_element = selected_element.parentElement;
-              selected_element = selected_element.parentElement;
+              selected_element = selected_element.parentElement.parentElement;
               selected_element = selected_element.previousElementSibling;
               // we skip the collapsed folders
               try {
@@ -350,11 +342,6 @@
                   if (selected_element.previousElementSibling === null) break;
                   selected_element = selected_element.previousElementSibling;
                 }
-              } catch (e) {
-                selected_element = null;
-              }
-              if (selected_element === null) break;
-              try {
                 selected_element = selected_element.querySelector("div.feed");
               } catch (e) {
                 selected_element = null;
