@@ -120,6 +120,23 @@ div.layout
           width: 1rem
           height: 1rem
           filter: opacity(0.8) invert(1)
+    div.options
+      display: flex
+      flex-direction: column
+      justify-content: space-between
+      div.option
+        display: flex
+        align-items: center
+        line-height: 1.2rem
+        padding: .3rem .6rem
+        gap: .3rem
+        input[type=checkbox]
+          margin-right: .3rem
+          width: 1.2rem
+          height: 1.2rem
+          cursor: pointer
+          &:hover
+            background: #2f2f2f
     div.feed
       cursor: pointer
       display: flex
@@ -312,9 +329,8 @@ div.layout
           height: 1rem
           filter: opacity(0.8)
   div.selected_column
-    // inset blue box shadow only on the sides
-    border-top: 1px solid darkcyan
-    border-radius: 0
+    .active
+      border: 1px solid deepskyblue!important
 
 ::-webkit-scrollbar
   width: 0

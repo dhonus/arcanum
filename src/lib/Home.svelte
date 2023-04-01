@@ -11,7 +11,8 @@
   let selected_element = null;
   let selected_column = null;
   let y_scroll;
-  let vim = false;
+  let vim = localStorage.getItem("vim") === "true";
+  console.log(localStorage.getItem("vim"));
 
   // to get values when Updating a feed
   let feeds = {};
@@ -22,9 +23,10 @@
     filename: "",
   }
 
-  function handleMouse(event) {
-    event.preventDefault();
-    vim = false;
+  function vim_change(event) {
+    vim = !vim;
+    localStorage.setItem("vim", vim);
+    setTimeout(() => event.target.checked = vim, 0);
   }
 
   import { writable } from 'svelte/store';
@@ -94,6 +96,8 @@
         }
       }
     }
+    // scroll up
+    document.getElementById("center").scrollTop = 0;
   }
   async function updateFeed(url){
     feeds = await invoke("update_feed", { url }).catch((e) => {
@@ -175,9 +179,6 @@
   function on_key_down(event) {
     // check if the user is typing in an input field
     if (document.activeElement.tagName === "INPUT") return;
-    //if (event.repeat) return;
-
-    vim = true;
 
     if(selected_element === null) {
       selected_element = document.querySelector("div.left .active");
@@ -189,8 +190,84 @@
       return;
     }
 
+    if (event.key === "v") {
+      vim = !vim;
+      return;
+    }
+    if (!vim) return;
+
     const original = selected_element;
     switch (event.key) {
+      case "g":{
+        switch (selected_column) {
+          case "left": {
+            selected_element = document.querySelector("div.left .feed");
+            let first_collapsible = document.querySelector("div.left div.list div.collapsible button");
+            if (first_collapsible === null) break;
+
+            if (first_collapsible.getAttribute("aria-expanded") === "false") {
+              first_collapsible.click();
+            }
+            if (selected_element === null) break;
+            selected_element.click();
+            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+            break;
+          }
+          case "center": {
+            selected_element = document.querySelector("div.center .entry");
+            if (selected_element === null) break;
+            selected_element.click();
+            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+            break;
+          }
+          case "right": {
+            if (y_scroll === null) return;
+            y_scroll.scrollTo({
+              top: 0,
+              behavior: 'smooth'
+            });
+            break;
+          }
+        }
+        break;
+      }
+      case "G":{
+        switch (selected_column) {
+          case "left": {
+            selected_element = document.querySelector("div.left div.list div.collapsible:last-of-type .feed:last-of-type");
+            let last_collapse = document.querySelector("div.left div.list div.collapsible:last-of-type button:last-of-type");
+            if (last_collapse === null) break;
+
+            if (last_collapse.getAttribute("aria-expanded") === "false") {
+              last_collapse.click();
+            }
+            // scroll to the bottom
+            last_collapse.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+            selected_element.click();
+
+            break;
+          }
+          case "center": {
+            console.log("enr")
+            selected_element = document.querySelector("div.center .end");
+            if (selected_element === null) break;
+            selected_element.previousElementSibling;
+            if (selected_element === null) break;
+            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
+            selected_element.click();
+            break;
+          }
+          case "right": {
+            if (y_scroll === null) return;
+            y_scroll.scrollTo({
+              top: y_scroll.scrollHeight,
+              behavior: 'smooth'
+            });
+            break;
+          }
+        }
+        break;
+      }
       case "h":
         console.log("left");
         switch (selected_column) {
@@ -215,7 +292,16 @@
               selected_element = selected_element.parentElement;
               selected_element = selected_element.parentElement;
               selected_element = selected_element.nextElementSibling;
-              // get first child that is div.feed
+              // we skip the collapsed folders
+              try {
+                while (selected_element.classList.contains("collapsed")) {
+                  if (selected_element.nextElementSibling === null) break;
+                  selected_element = selected_element.nextElementSibling;
+                }
+              } catch (e) {
+                selected_element = null;
+                break;
+              }
               try {
                 selected_element = selected_element.querySelector("div.feed");
               } catch (e) {
@@ -225,6 +311,7 @@
             else {
               selected_element = selected_element.nextElementSibling;
             }
+
             break;
           }
           case "center": {
@@ -238,7 +325,7 @@
               top: y_scroll.scrollTop + 100, // The amount to scroll down
               behavior: 'smooth' // Optional: Add smooth scrolling
             });
-            break;
+            return;
           }
         }
 
@@ -246,6 +333,7 @@
           selected_element = original;
           return;
         }
+        selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
         selected_element.click();
         break;
       case "k":
@@ -256,7 +344,16 @@
               selected_element = selected_element.parentElement;
               selected_element = selected_element.parentElement;
               selected_element = selected_element.previousElementSibling;
-              // get first child that is div.feed
+              // we skip the collapsed folders
+              try {
+                while (selected_element.classList.contains("collapsed")) {
+                  if (selected_element.previousElementSibling === null) break;
+                  selected_element = selected_element.previousElementSibling;
+                }
+              } catch (e) {
+                selected_element = null;
+              }
+              if (selected_element === null) break;
               try {
                 selected_element = selected_element.querySelector("div.feed");
               } catch (e) {
@@ -277,12 +374,13 @@
               top: y_scroll.scrollTop - 100,
               behavior: 'smooth'
             });
-            break;
+            return;
         }
         if (selected_element === null) {
             selected_element = original;
             return;
         }
+        selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
         selected_element.click();
         break;
       case "l":
@@ -303,10 +401,7 @@
     }
   }
 </script>
-<svelte:window
-        on:keydown={on_key_down}
-        on:mousemove={handleMouse}
-/>
+<svelte:window on:keydown={on_key_down} />
 <div class="layout">
   <div class="{vim && selected_column === 'left' ? 'left selected_column' : 'left'}">
     <div class="identity">
@@ -326,6 +421,14 @@
           </button>
         </div>
     </CollapsibleSection>
+    <CollapsibleSection headerText="Options">
+        <div class="options">
+            <div class="option">
+              <label>Vim mode</label>
+              <input type="checkbox" checked={vim} on:click|preventDefault={vim_change} />
+            </div>
+        </div>
+    </CollapsibleSection>
     <div class="spinner">
         {#if updating}
             <img src="/spinner.gif" alt="spinner"/>
@@ -336,24 +439,26 @@
       <p>Update feeds</p>
     </button>
     </div>
-    {#each Object.entries(feeds) as [key, category]}
-      <CollapsibleSection headerText={key} >
-        {#each category as feed}
-          <div on:click={loadFeed(feed.filename)} class={feed.url === __url__ ? 'feed active' : 'feed'}>
-            <p>{feed.feed.title}</p>
-            {#if feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0) !== 0}
-              <span class="count">
-                {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
-              </span>
-              {:else }
-              <span class="count" style="opacity: 0;"></span>
-            {/if}
-          </div>
-        {/each}
-      </CollapsibleSection>
-    {/each}
+    <div class="list">
+      {#each Object.entries(feeds) as [key, category]}
+        <CollapsibleSection headerText={key} >
+          {#each category as feed}
+            <div on:click={loadFeed(feed.filename)} class={feed.url === __url__ ? 'feed active' : 'feed'}>
+              <p>{feed.feed.title}</p>
+              {#if feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0) !== 0}
+                <span class="count">
+                  {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
+                </span>
+                {:else }
+                <span class="count" style="opacity: 0;"></span>
+              {/if}
+            </div>
+          {/each}
+        </CollapsibleSection>
+      {/each}
+    </div>
   </div>
-  <div class="{vim && selected_column === 'center' ? 'center selected_column' : 'center'}">
+  <div class="{vim && selected_column === 'center' ? 'center selected_column' : 'center'}" id="center">
     {#if currentFeed.title !== ""}
       <div class="meta-head" >
         <b>{currentFeed.title}</b>

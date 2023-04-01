@@ -15,7 +15,7 @@
     });
 </script>
 
-<div class="collapsible">
+<div class={expanded ? "collapsible" : "collapsible collapsed"}>
     <h3>
         <button aria-expanded={expanded} on:click={() => {
             expanded = !expanded;
