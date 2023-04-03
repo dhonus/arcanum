@@ -1,6 +1,32 @@
 <script>
-  import { invoke } from "@tauri-apps/api/tauri"
-  import CollapsibleSection from './CollapsibleSection.svelte'
+  import { invoke } from "@tauri-apps/api/tauri";
+  import CollapsibleSection from "./CollapsibleSection.svelte";
+
+  import { sel_elem, sel_col, y_scr, v } from "./stores";
+
+  import { onMount } from "svelte";
+  let selected_element;
+  let selected_column;
+  let y_scroll;
+  let vim;
+
+  onMount(async () => {
+    sel_elem.subscribe((value) => {
+      selected_element = value;
+    });
+    sel_col.subscribe((value) => {
+      selected_column = value;
+    });
+
+    y_scr.set(y_scroll);
+    y_scr.subscribe((value) => {
+      y_scroll = value;
+    });
+
+    v.subscribe((value) => {
+      vim = value;
+    });
+  });
 
   // to get values when Adding a feed
   let url = "";
@@ -8,10 +34,6 @@
   let warning = "";
   let updating = false;
 
-  let selected_element = null;
-  let selected_column = null;
-  let y_scroll;
-  let vim = localStorage.getItem("vim") === "true";
   console.log(localStorage.getItem("vim"));
 
   // to get values when Updating a feed
@@ -21,15 +43,15 @@
     description: "",
     read: [],
     filename: "",
-  }
+  };
 
   function vim_change(event) {
     vim = !vim;
-    localStorage.setItem("vim", vim);
-    setTimeout(() => event.target.checked = vim, 0);
+    localStorage.setItem("vim", String(vim));
+    setTimeout(() => (event.target.checked = vim), 0);
   }
 
-  import { writable } from 'svelte/store';
+  import { writable } from "svelte/store";
 
   let readBuffer = writable([]);
   let readDict = writable({});
@@ -37,12 +59,12 @@
   let readBufferValue = [];
   let readDictValue = {};
 
-  readBuffer.subscribe(value => {
+  readBuffer.subscribe((value) => {
     readBufferValue = value;
   });
 
-  readDict.subscribe(value => {
-      readDictValue = value;
+  readDict.subscribe((value) => {
+    readDictValue = value;
   });
 
   // to get values when Rendering a post
@@ -58,7 +80,7 @@
 
   updateFeed("");
 
-  async function feed(){
+  async function feed() {
     if (url === "") {
       warning = "Please enter a valid URL!";
       return;
@@ -81,10 +103,10 @@
     category = "";
     warning = "";
   }
-  async function loadFeed(fileName){
+  async function loadFeed(fileName) {
     selected_column = "left";
     for (const [key, value] of Object.entries(feeds)) {
-      for (let j = 0; j < value.length; j++){
+      for (let j = 0; j < value.length; j++) {
         if (value[j].filename === fileName || fileName === "") {
           currentFeed.description = value[j].feed.description;
           currentFeed.title = value[j].feed.title;
@@ -99,7 +121,7 @@
     // scroll up
     document.getElementById("center").scrollTop = 0;
   }
-  async function updateFeed(url){
+  async function updateFeed(url) {
     feeds = await invoke("update_feed", { url }).catch((e) => {
       console.log(e);
     });
@@ -108,7 +130,7 @@
     readDict.set({});
   }
 
-  async function readFeed(url){
+  async function readFeed(url) {
     feeds = await invoke("read_feed", { url }).catch((e) => {
       console.log(e);
     });
@@ -117,16 +139,16 @@
     readDict.set({});
   }
 
-  async function updateAll(){
+  async function updateAll() {
     updating = true;
-    feeds = await invoke("update_all", {  }).catch((e) => {
+    feeds = await invoke("update_all", {}).catch((e) => {
       warning = e;
     });
     readBuffer.set([]);
     readDict.set({});
     updating = false;
   }
-  async function deleteFeed(url){
+  async function deleteFeed(url) {
     feeds = await invoke("delete_feed", { url }).catch((e) => {
       console.log(e);
     });
@@ -139,28 +161,34 @@
     postBody = "";
     if (value.description !== null) postBody = value.description;
     if (value.content !== null) postBody = value.content;
-    if (postBody === "") postBody
-            = "The post" + value.title + "has no content. Please open in the browser to view the post.";
+    if (postBody === "")
+      postBody =
+        "The post" +
+        value.title +
+        "has no content. Please open in the browser to view the post.";
     postTitle = value.title;
     postDate = value.pub_date;
     postLink = value.link;
 
     //readBuffer.push(value.guid.value);
-    readBuffer.update(buffer => [...buffer, value.guid.value]);
+    readBuffer.update((buffer) => [...buffer, value.guid.value]);
 
     // here we add the feed that is being read to the readDict; this is so that the little "not read" bubble
     // is only shown if the post is not read in any of the feeds
     // better than reloading all the feeds from rust
     if (readDictValue[currentFeed.filename] === undefined) {
-      readDict.update(dict => {
-        if (!currentFeed.read.includes(value.guid.value)){
+      readDict.update((dict) => {
+        if (!currentFeed.read.includes(value.guid.value)) {
           dict[currentFeed.filename] = [value.guid.value];
         }
         return dict;
       });
     } else {
-      readDict.update(dict => {
-        if (!dict[currentFeed.filename].includes(value.guid.value) && !currentFeed.read.includes(value.guid.value)){
+      readDict.update((dict) => {
+        if (
+          !dict[currentFeed.filename].includes(value.guid.value) &&
+          !currentFeed.read.includes(value.guid.value)
+        ) {
           dict[currentFeed.filename].push(value.guid.value);
         }
         return dict;
@@ -171,273 +199,77 @@
   }
 
   async function markPostAsRead() {
-    await invoke("mark_read", { url:__url__, guid:__guid__ });
+    await invoke("mark_read", { url: __url__, guid: __guid__ });
   }
 
   // keyboard navigation
 
-  function on_key_down(event) {
-    // check if the user is typing in an input field
-    if (document.activeElement.tagName === "INPUT") return;
-
-    if(selected_element === null) {
-      selected_element = document.querySelector("div.left .active");
-      selected_element.click();
-      selected_column = "left";
-    }
-
-    if (selected_element === null) {
-      return;
-    }
-
-    if (event.key === "v") {
-      vim = !vim;
-      return;
-    }
-    if (!vim) return;
-
-    const original = selected_element;
-    switch (event.key) {
-      case "g":{
-        switch (selected_column) {
-          case "left": {
-            selected_element = document.querySelector("div.left .feed");
-            let first_collapsible = document.querySelector("div.left div.list div.collapsible button");
-            if (first_collapsible === null) break;
-
-            if (first_collapsible.getAttribute("aria-expanded") === "false") {
-              first_collapsible.click();
-            }
-            if (selected_element === null) break;
-            selected_element.click();
-            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-            break;
-          }
-          case "center": {
-            selected_element = document.querySelector("div.center .entry");
-            if (selected_element === null) break;
-            selected_element.click();
-            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-            break;
-          }
-          case "right": {
-            if (y_scroll === null) return;
-            y_scroll.scrollTo({
-              top: 0,
-              behavior: 'smooth'
-            });
-            break;
-          }
-        }
-        break;
-      }
-      case "G":{
-        switch (selected_column) {
-          case "left": {
-            selected_element = document.querySelector("div.left div.list div.collapsible:last-of-type .feed:last-of-type");
-            let last_collapse = document.querySelector("div.left div.list div.collapsible:last-of-type button:last-of-type");
-            if (last_collapse === null) break;
-
-            if (last_collapse.getAttribute("aria-expanded") === "false") {
-              last_collapse.click();
-            }
-            // scroll to the bottom
-            last_collapse.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-            selected_element.click();
-
-            break;
-          }
-          case "center": {
-            console.log("enr")
-            selected_element = document.querySelector("div.center .end");
-            if (selected_element === null) break;
-            selected_element.previousElementSibling;
-            if (selected_element === null) break;
-            selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-            selected_element.click();
-            break;
-          }
-          case "right": {
-            if (y_scroll === null) return;
-            y_scroll.scrollTo({
-              top: y_scroll.scrollHeight,
-              behavior: 'smooth'
-            });
-            break;
-          }
-        }
-        break;
-      }
-      case "h":
-        console.log("left");
-        switch (selected_column) {
-            case "center":
-              // get all elements with class .active in div.left
-              selected_element = document.querySelector("div.left .active");
-              selected_column = "left";
-              break;
-            case "right":
-              // get all elements with class .active in div.center
-              selected_element = document.querySelector("div.center .active");
-              selected_column = "center";
-              break;
-        }
-        selected_element.click();
-        break;
-      case "j":
-        switch (selected_column) {
-          case "left": {
-            if (selected_element.nextElementSibling === null) {
-              // get the current element's parent
-              selected_element = selected_element.parentElement.parentElement;
-              selected_element = selected_element.nextElementSibling;
-              // we skip the collapsed folders
-              try {
-                while (selected_element.classList.contains("collapsed")) {
-                  if (selected_element.nextElementSibling === null) break;
-                  selected_element = selected_element.nextElementSibling;
-                }
-                selected_element = selected_element.querySelector("div.feed");
-              } catch (e) {
-                selected_element = null;
-                break;
-              }
-            }
-            else {
-              selected_element = selected_element.nextElementSibling;
-            }
-            break;
-          }
-          case "center": {
-            selected_element = selected_element.nextElementSibling;
-            break;
-          }
-          case "right": {
-            // scroll the page down in svelte
-            if (y_scroll === null) return;
-            y_scroll.scrollTo({
-              top: y_scroll.scrollTop + 100, // The amount to scroll down
-              behavior: 'smooth' // Optional: Add smooth scrolling
-            });
-            return;
-          }
-        }
-        if (selected_element === null) {
-          selected_element = original;
-          return;
-        }
-        selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-        selected_element.click();
-        break;
-      case "k":
-        switch (selected_column) {
-          case "left":
-            if (selected_element.previousElementSibling === null) {
-              // get the current element's parent
-              selected_element = selected_element.parentElement.parentElement;
-              selected_element = selected_element.previousElementSibling;
-              // we skip the collapsed folders
-              try {
-                while (selected_element.classList.contains("collapsed")) {
-                  if (selected_element.previousElementSibling === null) break;
-                  selected_element = selected_element.previousElementSibling;
-                }
-                selected_element = selected_element.querySelector("div.feed");
-              } catch (e) {
-                selected_element = null;
-              }
-            }
-            else {
-              selected_element = selected_element.previousElementSibling;
-            }
-            break;
-          case "center":
-            selected_element = selected_element.previousElementSibling;
-            break;
-          case "right":
-            // scroll the page down in svelte
-            if (y_scroll === null) return;
-            y_scroll.scrollTo({
-              top: y_scroll.scrollTop - 100,
-              behavior: 'smooth'
-            });
-            return;
-        }
-        if (selected_element === null) {
-            selected_element = original;
-            return;
-        }
-        selected_element.scrollIntoView({behavior: "smooth", block: "center", inline: "nearest"});
-        selected_element.click();
-        break;
-      case "l":
-        switch (selected_column) {
-            case "left":
-              // get all elements with class .active in div.center
-              selected_element = document.querySelector("div.center .entry");
-              if (selected_element !== null) {
-                selected_element.click();
-              }
-              selected_column = "center";
-              break;
-            case "center":
-              selected_element = document.querySelector("div.right");
-              selected_column = "right";
-              break;
-        }
-    }
-  }
+  import { on_key_down } from "./keyboard";
+  import { subscribe, validate_each_argument } from "svelte/internal";
 </script>
+
 <svelte:window on:keydown={on_key_down} />
 <div class="layout">
-  <div class="{vim && selected_column === 'left' ? 'left selected_column' : 'left'}">
+  <div
+    class={vim && selected_column === "left" ? "left selected_column" : "left"}
+  >
     <div class="identity">
-      <img src="icon.png" alt="icon">
+      <img src="icon.png" alt="icon" />
       <h4>Arcanum RSS</h4>
     </div>
     <div class="adding">
-    <CollapsibleSection headerText="Add new feed">
-      {#if warning.length > 0}<div class="warning">{warning}</div>{/if}
+      <CollapsibleSection headerText="Add new feed">
+        {#if warning.length > 0}<div class="warning">{warning}</div>{/if}
         <div class="entry">
           <div>
             <input placeholder="https://" bind:value={url} />
             <input placeholder="Category" bind:value={category} />
           </div>
           <button on:click={feed} class="add_button">
-            <img src="/iconmonstr-plus-lined.svg" alt="add feed"/> Add feed
+            <img src="/iconmonstr-plus-lined.svg" alt="add feed" /> Add feed
           </button>
         </div>
-    </CollapsibleSection>
-    <CollapsibleSection headerText="Options">
+      </CollapsibleSection>
+      <CollapsibleSection headerText="Options">
         <div class="options">
-            <div class="option">
-              <label>Vim mode</label>
-              <input type="checkbox" checked={vim} on:click|preventDefault={vim_change} />
-            </div>
+          <div class="option">
+            <label>Vim mode</label>
+            <input
+              type="checkbox"
+              checked={vim}
+              on:click|preventDefault={vim_change}
+            />
+          </div>
         </div>
-    </CollapsibleSection>
-    <div class="spinner">
+      </CollapsibleSection>
+      <div class="spinner">
         {#if updating}
-            <img src="/spinner.gif" alt="spinner"/>
+          <img src="/spinner.gif" alt="spinner" />
         {/if}
-    </div>
-    <button on:click={updateAll} class="update_button">
-      <img src="/iconmonstr-refresh-lined.svg" alt="refresh"/>
-      <p>Update feeds</p>
-    </button>
+      </div>
+      <button on:click={updateAll} class="update_button">
+        <img src="/iconmonstr-refresh-lined.svg" alt="refresh" />
+        <p>Update feeds</p>
+      </button>
     </div>
     <div class="list">
       {#each Object.entries(feeds) as [key, category]}
-        <CollapsibleSection headerText={key} >
+        <CollapsibleSection headerText={key}>
           {#each category as feed}
-            <div on:click={loadFeed(feed.filename)} class={feed.url === __url__ ? 'feed active' : 'feed'}>
+            <div
+              on:click={loadFeed(feed.filename)}
+              class={feed.url === __url__ ? "feed active" : "feed"}
+            >
               <p>{feed.feed.title}</p>
               {#if feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0) !== 0}
                 <span class="count">
-                  {feed.unread - (readDictValue[feed.filename] !== undefined ? readDictValue[feed.filename].length : 0)}
+                  {feed.unread -
+                    (readDictValue[feed.filename] !== undefined
+                      ? readDictValue[feed.filename].length
+                      : 0)}
                 </span>
-                {:else }
-                <span class="count" style="opacity: 0;"></span>
+              {:else}
+                <span class="count" style="opacity: 0;" />
               {/if}
             </div>
           {/each}
@@ -445,53 +277,74 @@
       {/each}
     </div>
   </div>
-  <div class="{vim && selected_column === 'center' ? 'center selected_column' : 'center'}" id="center">
+  <div
+    class={vim && selected_column === "center"
+      ? "center selected_column"
+      : "center"}
+    id="center"
+  >
     {#if currentFeed.title !== ""}
-      <div class="meta-head" >
+      <div class="meta-head">
         <b>{currentFeed.title}</b>
         {currentFeed.description}
       </div>
       <div class="meta-control">
         <span>
-          <button class="update"
-                  on:click={updateFeed(currentFeed.filename)} title="Update feed">
+          <button
+            class="update"
+            on:click={updateFeed(currentFeed.filename)}
+            title="Update feed"
+          >
             <img src="/iconmonstr-refresh-lined.svg" alt="refresh" />
             <p>Update</p>
           </button>
-          <button class="update"
-                  on:click={readFeed(currentFeed.filename)} title="Mark all as read">
-            <img src="/iconmonstr-eye-check-lined.svg" alt="mark read"/>
+          <button
+            class="update"
+            on:click={readFeed(currentFeed.filename)}
+            title="Mark all as read"
+          >
+            <img src="/iconmonstr-eye-check-lined.svg" alt="mark read" />
           </button>
         </span>
-        <button class="update"
-                on:click={deleteFeed(currentFeed.filename)} title="Delete feed">
-          <img src="/iconmonstr-trash-can-28.svg"  alt="delete"/>
+        <button
+          class="update"
+          on:click={deleteFeed(currentFeed.filename)}
+          title="Delete feed"
+        >
+          <img src="/iconmonstr-trash-can-28.svg" alt="delete" />
         </button>
       </div>
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
-      <div on:click={renderPost(value)}
-           class="{value.guid.value === __guid__ ? 'entry active' : 'entry'}">
+      <div
+        on:click={renderPost(value)}
+        class={value.guid.value === __guid__ ? "entry active" : "entry"}
+      >
         {#if !currentFeed.read.includes(value.guid.value) && !readBufferValue.includes(value.guid.value)}
-          <span class="new"></span>
+          <span class="new" />
         {/if}
-          <div class="header">
-            {value.pub_date}
-          </div>
-          {value.title}
+        <div class="header">
+          {value.pub_date}
+        </div>
+        {value.title}
       </div>
     {/each}
     <div class="end">All caught up!</div>
   </div>
-  <div bind:this={y_scroll}
-       class="{vim && selected_column === 'right' ? 'right selected_column' : 'right'}">
+  <div
+    bind:this={y_scroll}
+    id="right"
+    class={vim && selected_column === "right"
+      ? "right selected_column"
+      : "right"}
+  >
     <article>
       {#if postDate !== ""}
         <div class="meta">
           <p>{postDate}</p>
           <div class="visit">
-            <a href="{postLink}" title="Visit the original site">
-              <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe">
+            <a href={postLink} title="Visit the original site">
+              <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe" />
             </a>
           </div>
         </div>
@@ -503,18 +356,21 @@
     </article>
   </div>
 </div>
+
 <style>
-  button, input {
+  button,
+  input {
     background: black;
     border: 1px solid #424242;
     line-height: 1.3rem;
     padding: 0.5rem;
     color: whitesmoke;
   }
-  button *, input * {
-    color: whitesmoke!important;
+  button *,
+  input * {
+    color: whitesmoke !important;
   }
-  div.identity{
+  div.identity {
     display: flex;
     justify-content: left;
     padding: 0.5rem;
