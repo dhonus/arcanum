@@ -26,5 +26,5 @@
    * Use global.d.ts instead of compilerOptions.types
    * to avoid limiting type declarations.
    */
-  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/lib/keyboard.ts", "src/main.js", "src/main.js", "src/main.js"]
+  "include": ["src/**/*.d.ts", "src/**/*.js", "src/**/*.svelte", "src/lib/keyboard.ts", "src/main.ts", "src/main.ts", "src/main.ts"]
 }

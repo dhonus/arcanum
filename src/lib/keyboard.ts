@@ -30,10 +30,12 @@ export function on_key_down(event: KeyboardEvent) {
   if (document.activeElement.tagName === "INPUT") return;
 
   if (selected_element === null) {
-    selected_element = document.querySelector("div.left .active");
+    selected_element = document.querySelector("div.left .feed");
     selected_element.click();
     selected_column = "left";
   }
+  selected_element.click();
+
 
   if (selected_element === null) {
     return;
@@ -118,7 +120,6 @@ export function on_key_down(event: KeyboardEvent) {
       break;
     }
     case "h":
-      console.log("left");
       switch (selected_column) {
         case "center":
           // get all elements with class .active in div.left
@@ -146,6 +147,12 @@ export function on_key_down(event: KeyboardEvent) {
                 if (selected_element.nextElementSibling === null) break;
                 selected_element = <HTMLElement>selected_element.nextElementSibling;
               }
+            } catch (e) {
+              selected_element = null;
+              break;
+            }
+            if (selected_element === null) break;
+            try {
               selected_element = selected_element.querySelector("div.feed");
             } catch (e) {
               selected_element = null;
@@ -159,6 +166,7 @@ export function on_key_down(event: KeyboardEvent) {
         }
         case "center": {
           selected_element = <HTMLElement>selected_element.nextElementSibling;
+          sel_elem.set(selected_element);
           break;
         }
         case "right": {

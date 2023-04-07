@@ -104,7 +104,8 @@
     warning = "";
   }
   async function loadFeed(fileName) {
-    selected_column = "left";
+    sel_col.set("left");
+    // set selected element to clicked
     for (const [key, value] of Object.entries(feeds)) {
       for (let j = 0; j < value.length; j++) {
         if (value[j].filename === fileName || fileName === "") {
@@ -155,8 +156,8 @@
     await loadFeed(url);
     await loadFeed("");
   }
-  async function renderPost(value) {
-    selected_column = "center";
+  async function renderPost(event, value) {
+    sel_elem.set(event.target);
     __guid__ = value.guid.value;
     postBody = "";
     if (value.description !== null) postBody = value.description;
@@ -196,6 +197,11 @@
     }
 
     await markPostAsRead();
+    if (selected_column !== "center") {
+    }
+    selected_element = document.querySelector("div.center .entry");
+    sel_col.set("center");
+    selected_column = "center";
   }
 
   async function markPostAsRead() {
@@ -317,7 +323,7 @@
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
       <div
-        on:click={renderPost(value)}
+        on:click={(event) => renderPost(event, value)}
         class={value.guid.value === __guid__ ? "entry active" : "entry"}
       >
         {#if !currentFeed.read.includes(value.guid.value) && !readBufferValue.includes(value.guid.value)}
