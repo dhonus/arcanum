@@ -25,17 +25,14 @@ v.subscribe(value => {
 });
 
 export function on_key_down(event: KeyboardEvent) {
-  console.log(y_scroll);
   // check if the user is typing in an input field
   if (document.activeElement.tagName === "INPUT") return;
 
   if (selected_element === null) {
-    selected_element = document.querySelector("div.left .feed");
+    selected_element = document.querySelector("div.left .active");
     selected_element.click();
     selected_column = "left";
   }
-  selected_element.click();
-
 
   if (selected_element === null) {
     return;
@@ -122,14 +119,17 @@ export function on_key_down(event: KeyboardEvent) {
     case "h":
       switch (selected_column) {
         case "center":
+          console.log("h")
           // get all elements with class .active in div.left
           selected_element = document.querySelector("div.left .active");
           selected_column = "left";
+          selected_element.click();
           break;
         case "right":
           // get all elements with class .active in div.center
           selected_element = document.querySelector("div.center .active");
           selected_column = "center";
+          selected_element.click();
           break;
       }
       selected_element.click();

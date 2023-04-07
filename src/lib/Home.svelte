@@ -104,6 +104,7 @@
     warning = "";
   }
   async function loadFeed(fileName) {
+    selected_column = "left";
     sel_col.set("left");
     // set selected element to clicked
     for (const [key, value] of Object.entries(feeds)) {
