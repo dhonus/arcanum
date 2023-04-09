@@ -7,6 +7,7 @@ html, body
   color: rgb(205, 204, 204)
   font-family: 'Roboto', sans-serif
   font-size: 17px
+  overflow: hidden
   a
     color: rgb(155, 120, 168)
     text-decoration: none
@@ -29,7 +30,7 @@ div.layout
   div.left
     flex: 1
     background: #1d1d1d
-    height: 100vh
+    height: auto
     overflow-y: auto
     border-top: 1px solid transparent
     div.identity
@@ -174,7 +175,7 @@ div.layout
   div.center
     flex: 1
     background: #1d1d1d
-    height: 100vh
+    height: auto
     overflow-y: auto
     display: flex
     flex-direction: column
@@ -231,6 +232,7 @@ div.layout
       margin: .3rem .3rem 0 .3rem
       border-radius: 7px 7px 0 0
       border: 1px solid $border-color
+      word-wrap: break-word
     div.meta-control
       display: flex
       flex-direction: row
@@ -276,7 +278,7 @@ div.layout
   div.right
     flex: 4
     background: #171717
-    height: 100vh
+    height: auto
     overflow-y: auto
     padding: 0 1rem
     border: 1px solid transparent
@@ -350,9 +352,19 @@ main.container div.right::-webkit-scrollbar
 ::-webkit-scrollbar-thumb:hover
   background: #555
 
-@media screen and (max-width: 1000px)
-  div.layout div.right
-    flex: 2
+@media screen and (max-width: 1200px)
+  div.layout 
+    div.right
+      flex: 2
+    div.center
+      flex: 1
+    div.left
+      flex: 1
+@media screen and (max-width: 1400px)
+  div.layout
+    div.right
+      flex: 3
+
 @media screen and (min-width: 2000px)
   div.layout div.right
     padding: 0 10%
