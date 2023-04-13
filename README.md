@@ -12,6 +12,16 @@ You can download a prebuilt binary from the [releases](https://github.com/dhonus
 
 You can build arcanum yourself by running `npm install` and `npm run tauri build` in the root of the project.
 
+### Key bindings
+|key|action|
+|---|---|
+|h|move to column on the left|
+|l|move to column on the right|
+|j|move cursor down|
+|k|move cursor up|
+|g|scroll to the top of the current column|
+|G|scroll to the bottom of the current column|
+
 ## Svelte + Tauri + Vite
 This template should help get you started developing with Tauri and Svelte in Vite.
 
