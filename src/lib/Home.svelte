@@ -213,6 +213,7 @@
 
   import { on_key_down } from "./keyboard";
   import { subscribe, validate_each_argument } from "svelte/internal";
+  // export the function updateAll
 </script>
 
 <svelte:window on:keydown={on_key_down} />

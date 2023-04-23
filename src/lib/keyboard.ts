@@ -2,7 +2,6 @@ import type { event } from '@tauri-apps/api';
 import { sel_elem, sel_col, y_scr, v } from './stores';
 import { writable } from 'svelte/store';
 import { onMount } from 'svelte';
-
 let y_scroll: HTMLElement;
 let selected_element: HTMLElement | null;
 let selected_column: string | null;
@@ -173,7 +172,7 @@ export function on_key_down(event: KeyboardEvent) {
           // scroll the page down in svelte
           if (y_scroll === null) return;
           y_scroll.scrollTo({
-            top: y_scroll.scrollTop + 100, // The amount to scroll down
+            top: y_scroll.scrollTop + 200, // The amount to scroll down
             behavior: 'smooth' // Optional: Add smooth scrolling
           });
           return;
@@ -215,7 +214,7 @@ export function on_key_down(event: KeyboardEvent) {
           // scroll the page down in svelte
           if (y_scroll === null) return;
           y_scroll.scrollTo({
-            top: y_scroll.scrollTop - 100,
+            top: y_scroll.scrollTop - 200,
             behavior: 'smooth'
           });
           return;
