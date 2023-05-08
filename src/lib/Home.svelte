@@ -2,13 +2,14 @@
   import { invoke } from "@tauri-apps/api/tauri";
   import CollapsibleSection from "./CollapsibleSection.svelte";
 
-  import { sel_elem, sel_col, y_scr, v } from "./stores";
+  import { sel_elem, sel_col, y_scr, v, browser_w } from "./stores";
 
   import { onMount } from "svelte";
   let selected_element;
   let selected_column;
   let y_scroll;
   let vim;
+  let browser;
 
   onMount(async () => {
     sel_elem.subscribe((value) => {
@@ -26,6 +27,9 @@
     v.subscribe((value) => {
       vim = value;
     });
+    browser_w.subscribe((value) => {
+      browser = value;
+    });
   });
 
   // to get values when Adding a feed
@@ -35,6 +39,7 @@
   let updating = false;
 
   console.log(localStorage.getItem("vim"));
+  console.log(localStorage.getItem("browser"));
 
   // to get values when Updating a feed
   let feeds = {};
@@ -49,6 +54,12 @@
     vim = !vim;
     localStorage.setItem("vim", String(vim));
     setTimeout(() => (event.target.checked = vim), 0);
+  }
+  function browser_change(event) {
+    browser = !browser;
+    localStorage.setItem("browser", String(browser));
+    setTimeout(() => (event.target.checked = browser), 0);
+    console.log(localStorage.getItem("browser"));
   }
 
   import { writable } from "svelte/store";
@@ -73,6 +84,7 @@
   let postTitle = "";
   let postDate = "";
   let postLink = "";
+  let postAuthor = "";
 
   // to get values when Marking a post as read
   let __url__ = "";
@@ -106,6 +118,7 @@
   async function loadFeed(fileName) {
     selected_column = "left";
     sel_col.set("left");
+    console.log(feeds)
     // set selected element to clicked
     for (const [key, value] of Object.entries(feeds)) {
       for (let j = 0; j < value.length; j++) {
@@ -171,6 +184,10 @@
     postTitle = value.title;
     postDate = value.pub_date;
     postLink = value.link;
+    postAuthor = value.author;
+    if (postAuthor == undefined) postAuthor = value.dublin_core_ext.creators[0];
+    if (postAuthor == undefined) postAuthor = value.dublin_core.publisher;
+    if (postAuthor == undefined) postAuthor = "";
 
     //readBuffer.push(value.guid.value);
     readBuffer.update((buffer) => [...buffer, value.guid.value]);
@@ -246,6 +263,14 @@
               type="checkbox"
               checked={vim}
               on:click|preventDefault={vim_change}
+            />
+          </div>
+          <div class="option">
+            <label>Open links in browser</label>
+            <input
+              type="checkbox"
+              checked={browser}
+              on:click|preventDefault={browser_change}
             />
           </div>
         </div>
@@ -351,11 +376,14 @@
         <div class="meta">
           <p>{postDate}</p>
           <div class="visit">
-            <a href={postLink} title="Visit the original site">
+            <a href={postLink} title="Visit the original site" target={browser ? "_blank" : ""}>
               <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe" />
             </a>
           </div>
         </div>
+      {/if}
+      {#if postAuthor !== "" && postAuthor !== null && postAuthor !== undefined}
+          <div class="author"><span>by </span>{postAuthor}</div>
       {/if}
       {#if postTitle !== ""}
         <h2 class="title">{postTitle}</h2>
