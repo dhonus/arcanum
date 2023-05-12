@@ -196,6 +196,11 @@ div.layout
       border: 1px solid transparent
       //border-bottom: 1px solid $border-color
       //border-left: 2px solid transparent
+      // add fade in animation
+      -webkit-animation: fadein .2s
+      animation: fadein .2s
+      animation-iteration-count: 1
+      animation-duration: .2s
       &.active
         background: #2f2f2f
         border: 1px solid $border-color
@@ -234,6 +239,9 @@ div.layout
       border-radius: 7px 7px 0 0
       border: 1px solid $border-color
       word-wrap: break-word
+      animation-duration: .2s
+      animation: fadein .2s
+      -webkit-animation: fadein .2s
     div.meta-control
       display: flex
       flex-direction: row
@@ -245,6 +253,9 @@ div.layout
       border-radius: 0 0 7px 7px
       border: 1px solid $border-color
       border-top: 0px
+      animation-duration: .2s
+      animation: fadein .2s
+      -webkit-animation: fadein .2s
       span
         display: flex
         flex-direction: row
@@ -287,6 +298,8 @@ div.layout
       width: 92%
       margin: auto
       display: block
+      animation: fadein .1s
+      -webkit-animation: fadein .1s
       p
         line-height: 1.4rem
         font-size: 1rem
@@ -375,3 +388,16 @@ main.container div.right::-webkit-scrollbar
 @media screen and (min-width: 2000px)
   div.layout div.right
     padding: 0 10%
+
+
+@keyframes fadein 
+  from
+    border-radius: 0
+  to
+    border-radius: 1
+
+@-webkit-keyframes fadein
+  from
+    opacity: 0
+  to 
+    opacity: 1

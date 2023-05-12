@@ -185,8 +185,8 @@
     postDate = value.pub_date;
     postLink = value.link;
     postAuthor = value.author;
-    if (postAuthor == undefined) postAuthor = value.dublin_core_ext.creators[0];
-    if (postAuthor == undefined) postAuthor = value.dublin_core.publisher;
+    if (postAuthor == undefined && value.dublin_core_ext != null) postAuthor = value.dublin_core_ext.creators[0];
+    if (postAuthor == undefined && value.dublin_core != null) postAuthor = value.dublin_core.publisher;
     if (postAuthor == undefined) postAuthor = "";
 
     //readBuffer.push(value.guid.value);
@@ -317,39 +317,42 @@
     id="center"
   >
     {#if currentFeed.title !== ""}
-      <div class="meta-head">
-        <b>{currentFeed.title}</b>
-        {currentFeed.description}
-      </div>
-      <div class="meta-control">
-        <span>
+      {#key currentFeed}
+        <div transition=fadeIn class="meta-head">
+          <b>{currentFeed.title}</b>
+          {currentFeed.description}
+        </div>
+        <div transition=fadeIn class="meta-control">
+          <span>
+            <button
+              class="update"
+              on:click={updateFeed(currentFeed.filename)}
+              title="Update feed"
+            >
+              <img src="/iconmonstr-refresh-lined.svg" alt="refresh" />
+              <p>Update</p>
+            </button>
+            <button
+              class="update"
+              on:click={readFeed(currentFeed.filename)}
+              title="Mark all as read"
+            >
+              <img src="/iconmonstr-eye-check-lined.svg" alt="mark read" />
+            </button>
+          </span>
           <button
             class="update"
-            on:click={updateFeed(currentFeed.filename)}
-            title="Update feed"
+            on:click={deleteFeed(currentFeed.filename)}
+            title="Delete feed"
           >
-            <img src="/iconmonstr-refresh-lined.svg" alt="refresh" />
-            <p>Update</p>
+            <img src="/iconmonstr-trash-can-28.svg" alt="delete" />
           </button>
-          <button
-            class="update"
-            on:click={readFeed(currentFeed.filename)}
-            title="Mark all as read"
-          >
-            <img src="/iconmonstr-eye-check-lined.svg" alt="mark read" />
-          </button>
-        </span>
-        <button
-          class="update"
-          on:click={deleteFeed(currentFeed.filename)}
-          title="Delete feed"
-        >
-          <img src="/iconmonstr-trash-can-28.svg" alt="delete" />
-        </button>
-      </div>
+        </div>
+      {/key}
     {/if}
     {#each Object.entries(feedBody) as [key, value]}
-      <div
+    {#key value}
+      <div transition=fadeIn
         on:click={(event) => renderPost(event, value)}
         class={value.guid.value === __guid__ ? "entry active" : "entry"}
       >
@@ -361,35 +364,38 @@
         </div>
         {value.title}
       </div>
+      {/key}
     {/each}
     <div class="end">All caught up!</div>
   </div>
-  <div
-    bind:this={y_scroll}
-    id="right"
-    class={vim && selected_column === "right"
-      ? "right selected_column"
-      : "right"}
-  >
-    <article>
-      {#if postDate !== ""}
-        <div class="meta">
-          <p>{postDate}</p>
-          <div class="visit">
-            <a href={postLink} title="Visit the original site" target={browser ? "_blank" : ""}>
-              <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe" />
-            </a>
+    <div
+      bind:this={y_scroll}
+      id="right"
+      class={vim && selected_column === "right"
+        ? "right selected_column"
+        : "right"}
+    >
+    {#key postBody}
+      <article transition=fadeIn>
+        {#if postDate !== ""}
+          <div class="meta">
+            <p>{postDate}</p>
+            <div class="visit">
+              <a href={postLink} title="Visit the original site" target={browser ? "_blank" : ""}>
+                <img src="/iconmonstr-globe-3.svg" class="globe" alt="globe" />
+              </a>
+            </div>
           </div>
-        </div>
-      {/if}
-      {#if postAuthor !== "" && postAuthor !== null && postAuthor !== undefined}
-          <div class="author"><span>by </span>{postAuthor}</div>
-      {/if}
-      {#if postTitle !== ""}
-        <h2 class="title">{postTitle}</h2>
-      {/if}
-      {@html postBody}
-    </article>
+        {/if}
+        {#if postAuthor !== "" && postAuthor !== null && postAuthor !== undefined}
+            <div class="author"><span>by </span>{postAuthor}</div>
+        {/if}
+        {#if postTitle !== ""}
+          <h2 class="title">{postTitle}</h2>
+        {/if}
+        {@html postBody}
+      </article>
+    {/key}
   </div>
 </div>
 
