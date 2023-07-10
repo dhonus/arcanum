@@ -175,7 +175,11 @@
     __guid__ = value.guid.value;
     postBody = "";
     if (value.description !== null) postBody = value.description;
-    if (value.content !== null) postBody = value.content;
+    if (value.content !== null) {
+      // this is just static HTML. We need to remove any "style" attributes from the HTML
+      // because they will mess up our styling
+      postBody = value.content.replace(/style="[^"]*"/g, "");
+    }
     if (postBody === "")
       postBody =
         "The post" +
@@ -229,7 +233,7 @@
   // keyboard navigation
 
   import { on_key_down } from "./keyboard";
-  import { subscribe, validate_each_argument } from "svelte/internal";
+  import { subscribe } from "svelte/internal";
   // export the function updateAll
 </script>
 
