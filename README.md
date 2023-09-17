@@ -10,7 +10,7 @@ Vim keybindings included.
 ## How to use
 You can download a prebuilt binary from the [releases](https://github.com/dhonus/arcanum/releases) page. Only linux tested. 
 
-You can build arcanum yourself by running `npm install` and `npm run tauri build` in the root of the project.
+You can build arcanum yourself by completing [setting up](https://tauri.app/v1/guides/getting-started/prerequisites#setting-up-linux) and running `npm install` and `npm run tauri build` in the root of the project.
 
 ### Key bindings
 |key|action|

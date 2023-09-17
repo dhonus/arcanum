@@ -8,7 +8,7 @@
   let selected_element;
   let selected_column;
   let y_scroll;
-  let vim;
+  let vim = false;
   let browser;
 
   onMount(async () => {
@@ -54,6 +54,7 @@
     vim = !vim;
     localStorage.setItem("vim", String(vim));
     setTimeout(() => (event.target.checked = vim), 0);
+    v.set(vim);
   }
   function browser_change(event) {
     browser = !browser;
